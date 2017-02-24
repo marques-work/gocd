@@ -2785,8 +2785,12 @@ table.variables th {
   max-height: 620px;
 }
 
+.console-action-bar {
+  white-space: nowrap;
+}
+
 .console-action-bar div, .console-footer-action-bar div {
-  width: 420px !important;
+  min-width: 540px;
 }
 
 pre, code, #admin-holder-for-admin-config-source-xml textarea {
