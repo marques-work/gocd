@@ -17,12 +17,16 @@
 @import "font-awesome/variables";
 @import "font-awesome/mixins";
 
+$CONSOLE_SECTION_HEADER: #383838;
+$CONSOLE_SECTION_HEADER_WHITE: #F5F5F5;
 $CONSOLE_PASS: #99E343;
-$CONSOLE_FAIL: #FF6B68;
+$CONSOLE_PASS_WHITE: #00A600;
+$CONSOLE_FAIL: #FF4B48;
 $CONSOLE_CALLOUT: #FFA;
+$CONSOLE_CALLOUT_WHITE: #F0B400;
 $CONSOLE_INFO: grey;
-$CONSOLE_SETUP: #7992B0;
-$CONSOLE_SETUP_ERR: #A567A5;;
+$CONSOLE_SETUP: #567191;
+$CONSOLE_SETUP_ERR: #885188;
 
 .console-area {
   .ts {
@@ -52,11 +56,6 @@ $CONSOLE_SETUP_ERR: #A567A5;;
 
   background-color: #333;
   color: white;
-
-  .white-theme & {
-    background-color: white;
-    color: black;
-  }
 
   font-family: Monaco, Consolas, Inconsolata, "Liberation Mono", "Courier New", monospace;
   font-size: 13px;
@@ -211,7 +210,7 @@ $CONSOLE_SETUP_ERR: #A567A5;;
     }
 
     dt[data-prefix], dt[data-line]:before {
-      background: #383838;
+      background: $CONSOLE_SECTION_HEADER;
     }
 
     dd {
@@ -228,6 +227,10 @@ $CONSOLE_SETUP_ERR: #A567A5;;
       &:before {
         content: $fa-var-caret-right;
       }
+
+      &:last-child {
+        display: none;
+      }
     }
 
 
@@ -240,7 +243,42 @@ $CONSOLE_SETUP_ERR: #A567A5;;
         content: $fa-var-caret-down;
       }
     }
-
   }
+
+  .white-theme & {
+    background-color: white;
+    color: black;
+
+    .foldable-section {
+      dt[data-prefix], dt:before {
+        background-color: $CONSOLE_SECTION_HEADER_WHITE;
+      }
+
+      [data-prefix="&2"], code {
+        color: $CONSOLE_CALLOUT_WHITE;
+      }
+
+      &[data-task-status="failed"], &[data-job-status="failed"] {
+        [data-prefix="&2"] {
+          color: $CONSOLE_FAIL;
+        }
+
+        code {
+          color: red;
+        }
+      }
+
+      &[data-task-status="passed"], &[data-job-status="passed"] {
+        &:before {
+          color: $CONSOLE_PASS_WHITE;
+        }
+
+        code {
+          color: $CONSOLE_PASS_WHITE;
+        }
+      }
+    }
+  }
+
 }
 
