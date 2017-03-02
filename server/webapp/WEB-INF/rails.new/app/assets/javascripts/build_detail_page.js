@@ -50,7 +50,7 @@
 
       $.each(containers, function initEachConsoleArea(i, area) {
         var container = $(area);
-        transformers.push(new LogOutputTransformer(container, new Foldable()));
+        transformers.push(new LogOutputTransformer(container, new LineWriter()));
 
         if (container.is("#tab-content-of-console *")) {
           new ConsoleScroller(container, $("#build_console"), $('.auto-scroll')).startScroll();
