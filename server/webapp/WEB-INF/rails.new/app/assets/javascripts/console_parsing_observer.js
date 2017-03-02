@@ -92,34 +92,44 @@
       section.toggleClass("open");
     });
 
+    function injectFragment(fragment, parentElement) {
+      if (!!fragment.childNodes.length) {
+        window.requestAnimationFrame(function attachSubtree() {
+          parentElement.appendChild(fragment);
+        });
+      }
+    }
+
     me.transform = function buildDomFromLogs(logLines) {
       var rawLine, match, continuedSection;
 
-      var residual = document.createDocumentFragment();
-      var queue = document.createDocumentFragment();
+      var residual, queue;
 
-      if (!currentSection) {
-        currentSection = new SectionCursor(residual, c("dl", {class: "foldable-section open"}));
-        consoleElement.append(currentSection.element());
-      } else {
-        new SectionCursor(residual, currentSection.element());
-      }
+      function resetBuffers() {
+        residual = document.createDocumentFragment();
+        queue = document.createDocumentFragment();
 
-      continuedSection = currentSection;
-
-      function flushToDOM(leftover, added) {
-        if (!!leftover.childNodes.length) {
-          window.requestAnimationFrame(function finishResidualSection() {
-            continuedSection.element()[0].appendChild(leftover);
-          });
+        if (!currentSection) {
+          currentSection = new SectionCursor(residual, c("dl", {class: "foldable-section open"}));
+          consoleElement.append(currentSection.element());
+        } else {
+          new SectionCursor(residual, currentSection.element());
         }
 
-        if (!!added.childNodes.length) {
-          window.requestAnimationFrame(function attachAddedSections() {
-            consoleElement[0].appendChild(added);
-          });
-        }
+        continuedSection = currentSection;
       }
+
+      function flushToDOM() {
+        var leftover = residual, incomplete = continuedSection.element()[0];
+        var added = queue, topLevel = consoleElement[0];
+
+        resetBuffers();
+
+        injectFragment(leftover, incomplete);
+        injectFragment(added, topLevel);
+      }
+
+      resetBuffers();
 
       for (var i = 0, prefix, line, timestamp, len = logLines.length; i < len; i++) {
         lineNumber++;
@@ -169,7 +179,7 @@
         currentLine.attr("data-line", lineNumber).prepend(c("span", {class: "ts"}, timestamp));
       }
 
-      flushToDOM(residual, queue);
+      flushToDOM();
     };
   }
 
