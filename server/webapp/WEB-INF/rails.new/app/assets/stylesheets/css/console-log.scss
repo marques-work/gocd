@@ -25,8 +25,10 @@ $CONSOLE_FAIL: #FF4B48;
 $CONSOLE_CALLOUT: #FFA;
 $CONSOLE_CALLOUT_WHITE: #F0B400;
 $CONSOLE_INFO: grey;
-$CONSOLE_SETUP: #567191;
-$CONSOLE_SETUP_ERR: #885188;
+$CONSOLE_SETUP: #7992B0;
+$CONSOLE_SETUP_WHITE: darken($CONSOLE_SETUP, 13%);
+$CONSOLE_SETUP_ERR: #A567A5;
+$CONSOLE_SETUP_ERR_WHITE: darken($CONSOLE_SETUP_ERR, 10%);
 
 .console-area {
   .ts {
@@ -127,6 +129,7 @@ $CONSOLE_SETUP_ERR: #885188;
     [data-prefix="pe"] {
       color: $CONSOLE_SETUP_ERR;
     }
+
     [data-prefix="##"] {
       color: $CONSOLE_INFO;
     }
@@ -268,6 +271,14 @@ $CONSOLE_SETUP_ERR: #885188;
         background-color: $CONSOLE_SECTION_HEADER_WHITE;
       }
 
+      [data-prefix="pr"] {
+        color: $CONSOLE_SETUP_WHITE;
+      }
+
+      [data-prefix="pe"] {
+        color: $CONSOLE_SETUP_ERR_WHITE;
+      }
+
       [data-prefix="&2"], code {
         color: $CONSOLE_CALLOUT_WHITE;
       }
@@ -291,8 +302,17 @@ $CONSOLE_SETUP_ERR: #885188;
           color: $CONSOLE_PASS_WHITE;
         }
       }
+
+      &[data-type="cancel"] {
+        &[data-task-status="passed"] code, dt, [data-prefix] {
+          color: $CONSOLE_SETUP_WHITE;
+        }
+
+        &[data-task-status="failed"] code, [data-prefix="&2"], [data-prefix="x1"] {
+          color: $CONSOLE_SETUP_ERR_WHITE;
+        }
+      }
     }
   }
-
 }
 
