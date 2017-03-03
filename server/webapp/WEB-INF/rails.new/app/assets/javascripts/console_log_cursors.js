@@ -61,6 +61,14 @@
       }
     }
 
+    function insertBasic(cursor, line) {
+      var output = c("dt");
+
+      output.innerHTML = ansi.ansi_to_html(line);
+      cursor.write(output);
+      return $(output);
+    }
+
     function insertHeader(cursor, prefix, line) {
       var header = c("dt", {"data-prefix": prefix});
 
@@ -80,6 +88,7 @@
 
     this.insertHeader = insertHeader;
     this.insertLine = insertLine;
+    this.insertBasic = insertBasic;
   }
 
   function SectionCursor(node, section) {

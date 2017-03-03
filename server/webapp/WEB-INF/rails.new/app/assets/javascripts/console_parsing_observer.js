@@ -172,8 +172,7 @@
             timestamp = "", line = rawLine;
           }
 
-          c(currentSection[0], currentLine = c("dt", line));
-          currentLine = $(currentLine);
+          currentLine = writer.insertBasic(currentSection, line);
         }
 
         currentLine.attr("data-line", lineNumber).prepend(c("span", {class: "ts"}, timestamp));
