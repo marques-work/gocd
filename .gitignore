@@ -148,3 +148,4 @@ plugin-infra/go-plugin-access/config/cipher
 
 build/
 out/
+server/dev
