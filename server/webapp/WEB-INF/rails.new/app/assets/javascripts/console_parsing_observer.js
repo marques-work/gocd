@@ -54,6 +54,8 @@
         if (nextLine !== startLineNumber) {
           lineSet = data.match(/^.*([\n\r]+|$)/gm);
 
+          if ("" === lineSet[lineSet.length - 1]) lineSet.pop(); // regex generally leaves a terminal blank line for each set
+
           while (lineSet.length) {
             slice = lineSet.splice(0, 1000);
             transformer.transform(slice);
