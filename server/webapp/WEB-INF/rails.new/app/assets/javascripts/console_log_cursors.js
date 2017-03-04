@@ -62,7 +62,7 @@
     }
 
     function insertBasic(cursor, line) {
-      var output = c("dt");
+      var output = c("dd");
 
       output.innerHTML = ansi.ansi_to_html(line);
       cursor.write(output);
@@ -94,6 +94,8 @@
   function SectionCursor(node, section) {
     var cursor, me = this;
 
+    if (!section) section = $(blankSectionElement());
+
     if (node instanceof $) node = node[0];
     if (!(section instanceof $)) section = $(section);
 
@@ -101,6 +103,23 @@
     // sometimes this is the section element, and sometimes it is the "node" argument,
     // which may be a DocumentFragment that
     cursor = $.contains(node, section[0]) ? section[0] : node;
+
+    function blankSectionElement() {
+      return c("dl", {class: "foldable-section open"});
+    }
+
+    function addAnotherCursor(parentNode) {
+      if (parentNode instanceof $) parentNode = parentNode[0]; // parentNode may be a real element or document fragment
+
+      var element = blankSectionElement();
+      parentNode.appendChild(element);
+
+      return new SectionCursor(parentNode, $(element));
+    }
+
+    function cloneTo(newNode) {
+      return new SectionCursor(newNode, section);
+    }
 
     function write(childNode) {
       cursor.appendChild(childNode);
@@ -112,6 +131,13 @@
 
     function getSection() {
       return section;
+    }
+
+    function markMultiline() {
+      if (!section.data("multiline")) {
+        section.prepend(c("a", {class: "fa toggle"}));
+        section.data("multiline", true);
+      }
     }
 
     function onFinishSection() {
@@ -193,42 +219,34 @@
       return [Types.PASS, Types.FAIL, Types.JOB_PASS, Types.JOB_FAIL, Types.CANCEL_TASK_PASS, Types.CANCEL_TASK_FAIL].indexOf(prefix) > -1;
     }
 
-    function closeAndStartNew(container) {
+    function closeAndStartNew(parentNode) {
       // close section and start a new one
       onFinishSection();
 
-      return SectionCursor.addCursorTo(container);
+      return addAnotherCursor(parentNode);
     }
 
-    this.detectError = detectError;
-    this.isExplicitEndBoundary = isExplicitEndBoundary;
+    // public API
 
+    this.detectError = detectError;
+    this.markMultiline = markMultiline;
+
+    this.hasType = hasType;
     this.assignType = assignType;
     this.isPartOfSection = isPartOfSection;
+    this.isExplicitEndBoundary = isExplicitEndBoundary;
     this.closeAndStartNew = closeAndStartNew;
 
     this.write = write;
 
-    this.markMultiline = function markMultiline() {
-      if (!section.data("multiline")) {
-        section.prepend(c("a", {class: "fa toggle"}));
-        section.data("multiline", true);
-      }
-    };
-
-    this.hasType = hasType;
     this.element = getSection;
+    this.cloneTo = cloneTo;
   }
 
-  SectionCursor.addCursorTo = function addBlankSection(node) {
-    if (node instanceof $) node = node[0]; // node may be a real element or document fragment
-
-    var section = c("dl", {class: "foldable-section open"});
-    node.appendChild(section);
-
-    return new SectionCursor(node, $(section));
+  window.FoldableSection = {
+    Types: Types,
+    Cursor: SectionCursor,
+    LineWriter: LineWriter
   };
 
-  window.SectionCursor = SectionCursor;
-  window.LineWriter = LineWriter;
 })(jQuery, crel);

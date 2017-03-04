@@ -75,14 +75,12 @@
     me.notify = consumeBuildLog;
   }
 
-  function LogOutputTransformer(consoleElement, writer) {
-    var me = this;
-    var currentSection, currentLine;
+  function LogOutputTransformer(consoleElement, Section) {
+    var self = this, writer = new Section.LineWriter();
+    var currentSection, currentLine, lineNumber = 0;
 
-    var re = /^([^|]{2})\|(\d\d:\d\d:\d\d\.\d\d\d) (.*)/; // parses prefix, timestamp, and line content
-    var legacy = /^(\d\d:\d\d:\d\d\.\d\d\d )?(.*)/; // timestamps were not guaranteed to precede content in the old format
-
-    var lineNumber = 0;
+    var PREFIXED_LOG_LINE = /^([^|]{2})\|(\d\d:\d\d:\d\d\.\d\d\d) (.*)/, // parses prefix, timestamp, and line content
+        LEGACY_LOG_LINE   = /^(\d\d:\d\d:\d\d\.\d\d\d )?(.*)/; // timestamps are not guaranteed on each line in the old format
 
     consoleElement.on("click", ".toggle", function toggleSectionCollapse(e) {
       e.stopPropagation();
@@ -100,9 +98,8 @@
       }
     }
 
-    me.transform = function buildDomFromLogs(logLines) {
+    self.transform = function buildDomFromLogs(logLines) {
       var rawLine, match, continuedSection;
-
       var residual, queue;
 
       function resetBuffers() {
@@ -110,10 +107,10 @@
         queue = document.createDocumentFragment();
 
         if (!currentSection) {
-          currentSection = new SectionCursor(residual, c("dl", {class: "foldable-section open"}));
+          currentSection = new Section.Cursor(residual);
           consoleElement.append(currentSection.element());
         } else {
-          new SectionCursor(residual, currentSection.element());
+          currentSection = currentSection.cloneTo(residual);
         }
 
         continuedSection = currentSection;
@@ -134,7 +131,7 @@
       for (var i = 0, prefix, line, timestamp, len = logLines.length; i < len; i++) {
         lineNumber++;
         rawLine = logLines[i];
-        match = rawLine.match(re);
+        match = rawLine.match(PREFIXED_LOG_LINE);
 
         if (match) {
           prefix = match[1];
@@ -165,7 +162,7 @@
           }
         } else {
 
-          if (match = rawLine.match(legacy)) {
+          if (match = rawLine.match(LEGACY_LOG_LINE)) {
             timestamp = $.trim(match[1] || "");
             line = match[2] || "";
           } else {
