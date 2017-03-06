@@ -170,7 +170,7 @@ $CONSOLE_SETUP_ERR_WHITE: darken($CONSOLE_SETUP_ERR, 10%);
 
     &[data-task-status="failed"], &[data-job-status="failed"] {
       &:before {
-        content: $fa-var-exclamation-triangle;
+        content: $fa-var-exclamation-circle;
         color: red;
       }
 
@@ -211,7 +211,7 @@ $CONSOLE_SETUP_ERR_WHITE: darken($CONSOLE_SETUP_ERR, 10%);
 
     &[data-task-status="cancelled"] {
       &:before {
-        content: $fa-var-times;
+        content: $fa-var-ban;
         color: $CONSOLE_CALLOUT;
       }
     }
