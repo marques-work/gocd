@@ -22,6 +22,7 @@ import com.thoughtworks.go.buildsession.BuildSessionBasedTestCase;
 import com.thoughtworks.go.config.AgentRegistry;
 import com.thoughtworks.go.config.GuidService;
 import com.thoughtworks.go.domain.*;
+import com.thoughtworks.go.matchers.RegexMatcher;
 import com.thoughtworks.go.plugin.access.packagematerial.PackageRepositoryExtension;
 import com.thoughtworks.go.plugin.access.pluggabletask.TaskExtension;
 import com.thoughtworks.go.plugin.access.scm.SCMExtension;
@@ -37,8 +38,6 @@ import com.thoughtworks.go.util.SystemEnvironment;
 import com.thoughtworks.go.websocket.*;
 import com.thoughtworks.go.work.SleepWork;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPut;
-import org.eclipse.jetty.util.IO;
 import org.eclipse.jetty.websocket.api.RemoteEndpoint;
 import org.junit.After;
 import org.junit.Rule;
@@ -50,12 +49,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
-import java.net.URI;
 import java.security.GeneralSecurityException;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -173,7 +171,7 @@ public class AgentWebSocketClientControllerTest {
     }
 
     @Test
-    public void processAssignWorkActionWitConsoleLogsThroughhWebsockets() throws IOException, InterruptedException {
+    public void processAssignWorkActionWithConsoleLogsThroughWebSockets() throws IOException, InterruptedException {
         SystemEnvironment env = new SystemEnvironment();
         env.set(SystemEnvironment.WEBSOCKET_ENABLED, true);
         env.set(SystemEnvironment.CONSOLE_LOGS_THROUGH_WEBSOCKET_ENABLED, true);
@@ -194,13 +192,14 @@ public class AgentWebSocketClientControllerTest {
         Message message2 = argumentCaptor.getAllValues().get(0);
         assertThat(message2.getAcknowledgementId(), notNullValue());
         assertThat(message2.getAction(), is(Action.consoleOut));
-        assertThat(message2.getData(), is(MessageEncoding.encodeData(new ConsoleTransmission("Sleeping for 0 milliseconds", new JobIdentifier()))));
+        ConsoleTransmission ct = MessageEncoding.decodeData(message2.getData(), ConsoleTransmission.class);
+        assertThat(ct.getLine(), RegexMatcher.matches("Sleeping for 0 milliseconds"));
         env.set(SystemEnvironment.WEBSOCKET_ENABLED, false);
         env.set(SystemEnvironment.CONSOLE_LOGS_THROUGH_WEBSOCKET_ENABLED, false);
     }
 
     @Test
-    public void processBuildCommandWithConsoleLogsThroughWebsockets() throws Exception {
+    public void processBuildCommandWithConsoleLogsThroughWebSockets() throws Exception {
         ArgumentCaptor<Message> currentStatusMessageCaptor = ArgumentCaptor.forClass(Message.class);
         when(systemEnvironment.isConsoleLogsThroughWebsocketEnabled()).thenReturn(true);
         when(agentRegistry.uuid()).thenReturn(agentUuid);
@@ -230,7 +229,9 @@ public class AgentWebSocketClientControllerTest {
         Message consoleOutMsg = currentStatusMessageCaptor.getAllValues().get(0);
         assertThat(consoleOutMsg.getAcknowledgementId(), notNullValue());
         assertThat(consoleOutMsg.getAction(), is(Action.consoleOut));
-        assertThat(consoleOutMsg.getData(), is(MessageEncoding.encodeData(new ConsoleTransmission("building", "b001"))));
+        ConsoleTransmission ct = MessageEncoding.decodeData(consoleOutMsg.getData(), ConsoleTransmission.class);
+        assertThat(ct.getLine(), RegexMatcher.matches("building"));
+        assertEquals(ct.getBuildId(), "b001");
 
         Message message = currentStatusMessageCaptor.getAllValues().get(1);
         assertThat(message.getAcknowledgementId(), notNullValue());
