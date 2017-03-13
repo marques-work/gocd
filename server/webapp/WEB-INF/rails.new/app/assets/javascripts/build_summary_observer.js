@@ -52,6 +52,7 @@
     },
     updateBuildSummary:      function updateBuildSummary(json) {
       var status = json.building_info.current_status.toLowerCase();
+      $(".job_details_content").attr("data-result", status).removeData("data-result");
       $('#build_name_status').text(status);
       $('#build_scheduled_date').text(json.building_info.build_scheduled_date);
       $('#build_assigned_date').text(json.building_info.build_assigned_date);

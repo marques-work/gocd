@@ -80,7 +80,7 @@
               <div class="sidebar_history">
                   #parse("sidebar/_sidebar_build_list.vm")
               </div>
-              <div class="job_details_content" data-pipeline="${presenter.pipelineName}" data-stage="${presenter.stageName}" data-job="${presenter.id}" data-build="${presenter.buildName}">
+              <div class="job_details_content" data-pipeline="${presenter.pipelineName}" data-stage="${presenter.stageName}" data-job="${presenter.id}" data-build="${presenter.buildName}" data-result="$presenter.result">
                 <div class="sub_tabs_container">
                   <ul>
                     <li class="current_tab" id="build_console">
@@ -166,13 +166,4 @@
 ##    </div>
 <!-- end project summary -->
 </div>
-<script type="text/javascript">
-  var cruise_stage_or_build_detail_page_status = '$presenter.result';
-  var subtab_callback_map = {
-    'console':  new SubTabs($$('.sub_tabs_container')[0].down('ul').select('#build_console')[0]),
-    'failures': new SubTabs($$('.sub_tabs_container')[0].down('ul').select('#failures_console')[0])
-  };
-
-  var tabsManager = new TabsManager(undefined, 'build', '${presenter.pipelineName}-${presenter.stageName}-${presenter.buildName}', 'console', subtab_callback_map);
-</script>
 #parse("shared/_footer.vm")
