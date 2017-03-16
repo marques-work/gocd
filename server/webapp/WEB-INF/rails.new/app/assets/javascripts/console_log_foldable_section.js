@@ -81,7 +81,7 @@
       var output = c("dd", {"class": "log-fs-line log-fs-line-" + ReverseTypes[prefix]});
 
       formatContent(output, prefix, line);
-      cursor.write(output);
+      cursor.writeBody(output);
 
       return output;
     }
@@ -120,11 +120,16 @@
     }
 
     function cloneTo(newNode) {
+      if (section.body) newNode.body = section.body;
       return new SectionCursor(newNode, section);
     }
 
     function write(childNode) {
       cursor.appendChild(childNode);
+    }
+
+    function writeBody(childNode) {
+      cursor.body.appendChild(childNode);
     }
 
     function type() {
@@ -137,6 +142,8 @@
 
     function markMultiline() {
       if (!section.priv.multiline) {
+        section.body = cursor.body = c("section", {class: "fs-multiline"});
+        cursor.appendChild(cursor.body);
         section.insertBefore(c("a", {class: "fa toggle"}), section.childNodes[0]);
         section.priv.multiline = true;
       }
@@ -235,6 +242,7 @@
     this.closeAndStartNew = closeAndStartNew;
 
     this.write = write;
+    this.writeBody = writeBody;
 
     this.element = getSection;
     this.cloneTo = cloneTo;
