@@ -246,6 +246,9 @@ public class PipelineRepository extends HibernateDaoSupport {
                 return (PipelineSelections) goCache.get(key);
             }
             pipelineSelections = getHibernateTemplate().get(PipelineSelections.class, id);
+            if (null != pipelineSelections && pipelineSelections.needsUpgrade()) {
+                getHibernateTemplate().saveOrUpdate(pipelineSelections.upgrade());
+            }
             goCache.put(key, pipelineSelections);
             return pipelineSelections;
         }
@@ -276,7 +279,12 @@ public class PipelineRepository extends HibernateDaoSupport {
                 pipelineSelections = null;
             } else {
                 pipelineSelections = (PipelineSelections) list.get(0);
+
+                if (pipelineSelections.needsUpgrade()) {
+                    getHibernateTemplate().saveOrUpdate(pipelineSelections.upgrade());
+                }
             }
+
             goCache.put(key, pipelineSelections);
             return pipelineSelections;
         }

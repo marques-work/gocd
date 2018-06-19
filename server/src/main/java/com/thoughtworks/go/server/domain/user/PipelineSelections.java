@@ -16,6 +16,7 @@
 
 package com.thoughtworks.go.server.domain.user;
 
+import com.google.gson.Gson;
 import com.thoughtworks.go.config.CaseInsensitiveString;
 import com.thoughtworks.go.config.PipelineConfig;
 import com.thoughtworks.go.config.PipelineConfigs;
@@ -24,12 +25,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class PipelineSelections extends PersistentObject implements Serializable {
+    private static final Gson GSON = new Gson();
+    private static int CURRENT_SCHEMA_VERSION = 1;
 
     private Date lastUpdate;
     public static final PipelineSelections ALL = new PipelineSelections() {
@@ -41,10 +41,33 @@ public class PipelineSelections extends PersistentObject implements Serializable
             return true;
         }
     };
+
     private List<String> pipelines;
     private Long userId;
     private List<CaseInsensitiveString> caseInsensitivePipelineList = new ArrayList<>();
     private boolean isBlacklist;
+    private Filters viewFilters;
+    private int version;
+
+    public String getFilters() {
+        return Filters.toJson(this.viewFilters);
+    }
+
+    public void setFilters(String filters) {
+        this.viewFilters = Filters.fromJson(filters);
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public boolean needsUpgrade() {
+        return CURRENT_SCHEMA_VERSION > version;
+    }
 
     public PipelineSelections() {
         this(new ArrayList<>());
@@ -145,6 +168,20 @@ public class PipelineSelections extends PersistentObject implements Serializable
         return isBlacklist;
     }
 
+    public PipelineSelections upgrade() {
+        ArrayList<DashboardFilter> views = new ArrayList<>();
+
+        this.viewFilters = new Filters(views);
+
+        views.add(isBlacklist ?
+                new BlacklistFilter(null, null, caseInsensitivePipelineList) :
+                new WhitelistFilter(null, null, caseInsensitivePipelineList)
+        );
+
+        this.version = CURRENT_SCHEMA_VERSION;
+
+        return this;
+    }
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);

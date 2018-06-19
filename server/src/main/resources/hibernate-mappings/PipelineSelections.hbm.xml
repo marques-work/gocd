@@ -27,5 +27,7 @@
         <property name="userId" access="field"/>
         <property name="lastUpdate"/>
         <property name="isBlacklist" access="field"/>
+        <property name="filters" access="property"/>
+        <property name="version" access="field"/>
     </class>
 </hibernate-mapping>
