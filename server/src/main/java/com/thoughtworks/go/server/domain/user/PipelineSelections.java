@@ -24,10 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class PipelineSelections extends PersistentObject implements Serializable {
     private static int CURRENT_SCHEMA_VERSION = 1;
@@ -58,6 +55,11 @@ public class PipelineSelections extends PersistentObject implements Serializable
 
     public void setFilters(String filters) {
         this.viewFilters = Filters.fromJson(filters);
+    }
+
+    protected Filters viewFilters() {
+        if (null == viewFilters) return new Filters(Collections.singletonList(Filters.DEFAULT));
+        return viewFilters;
     }
 
     public int getVersion() {

@@ -23,7 +23,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 public class Filters {
-
+    public static DashboardFilter DEFAULT = new BlacklistFilter(null, null, Collections.EMPTY_LIST);
     public static final Gson GSON = new GsonBuilder().
             registerTypeAdapter(Filters.class, new FiltersDeserializer()).
             registerTypeAdapter(Filters.class, new FiltersSerializer()).
@@ -51,7 +51,8 @@ public class Filters {
     }
 
     public DashboardFilter named(String name) {
-        return this.filterMap.get(name);
+        if (this.filterMap.containsKey(name)) return this.filterMap.get(name);
+        return DEFAULT;
     }
 
     public List<DashboardFilter> filters() {
