@@ -16,7 +16,6 @@
 
 package com.thoughtworks.go.server.domain.user;
 
-import com.google.gson.Gson;
 import com.thoughtworks.go.config.CaseInsensitiveString;
 import com.thoughtworks.go.config.PipelineConfig;
 import com.thoughtworks.go.config.PipelineConfigs;
@@ -25,19 +24,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 public class PipelineSelections extends PersistentObject implements Serializable {
-    private static final Gson GSON = new Gson();
     private static int CURRENT_SCHEMA_VERSION = 1;
 
     private Date lastUpdate;
     public static final PipelineSelections ALL = new PipelineSelections() {
-        @Override public boolean includesGroup(PipelineConfigs group) {
+        @Override
+        public boolean includesGroup(PipelineConfigs group) {
             return true;
         }
 
-        @Override public boolean includesPipeline(PipelineConfig pipeline) {
+        @Override
+        public boolean includesPipeline(PipelineConfig pipeline) {
             return true;
         }
     };
@@ -105,10 +108,6 @@ public class PipelineSelections extends PersistentObject implements Serializable
         return includesPipeline(pipeline.name());
     }
 
-    public boolean includesPipeline(String pipelineName) {
-        return includesPipeline(new CaseInsensitiveString(pipelineName));
-    }
-
     public boolean includesPipeline(CaseInsensitiveString pipelineName) {
         boolean isInCurrentSelection = caseInsensitivePipelineList().contains(pipelineName);
 
@@ -142,15 +141,18 @@ public class PipelineSelections extends PersistentObject implements Serializable
 
     public static PipelineSelections singleSelection(final String pipelineName) {
         return new PipelineSelections() {
-            @Override public boolean includesPipeline(PipelineConfig pipeline) {
+            @Override
+            public boolean includesPipeline(PipelineConfig pipeline) {
                 return compare(pipelineName, CaseInsensitiveString.str(pipeline.name()));
             }
 
-            @Override public boolean includesPipeline(String pipeline) {
-                return compare(pipelineName, pipeline);
+            @Override
+            public boolean includesPipeline(CaseInsensitiveString pipeline) {
+                return compare(pipelineName, CaseInsensitiveString.str(pipeline));
             }
 
-            @Override public boolean includesGroup(PipelineConfigs group) {
+            @Override
+            public boolean includesGroup(PipelineConfigs group) {
                 return true;
             }
 
@@ -182,6 +184,7 @@ public class PipelineSelections extends PersistentObject implements Serializable
 
         return this;
     }
+
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);

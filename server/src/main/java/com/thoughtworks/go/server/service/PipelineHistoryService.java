@@ -445,7 +445,7 @@ public class PipelineHistoryService implements PipelineInstanceLoader {
     private void filterSelections(PipelineGroupModels groupModels, PipelineSelections pipelineSelections) {
         for (PipelineGroupModel groupModel : groupModels.asList()) {
             for (PipelineModel pipelineModel : groupModel.getPipelineModels()) {
-                if(!pipelineSelections.includesPipeline(pipelineModel.getName())){
+                if (!pipelineSelections.includesPipeline(new CaseInsensitiveString(pipelineModel.getName()))){
                     groupModels.removePipeline(groupModel,pipelineModel);
                 }
             }

@@ -46,13 +46,13 @@ public class PipelineSelectionsTest {
     @Test
     public void shouldReturnASelectionForASinglePipeline_whenBlacklistIsEnabled() {
         PipelineSelections selections = PipelineSelections.singleSelection("pipeline");
-        assertThat(selections.includesPipeline("pipeline"), is(true));
+        assertThat(selections.includesPipeline(new CaseInsensitiveString("pipeline")), is(true));
         assertThat(selections.includesPipeline(pipelineConfig("pipeline")), is(true));
 
-        assertThat(selections.includesPipeline("PIPELINE"), is(true));
+        assertThat(selections.includesPipeline(new CaseInsensitiveString("PIPELINE")), is(true));
         assertThat(selections.includesPipeline(pipelineConfig("PIPELINE")), is(true));
 
-        assertThat(selections.includesPipeline("foo"), is(false));
+        assertThat(selections.includesPipeline(new CaseInsensitiveString("foo")), is(false));
         assertThat(selections.includesPipeline(pipelineConfig("foo")), is(false));
     }
 

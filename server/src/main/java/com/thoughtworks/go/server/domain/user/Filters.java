@@ -20,8 +20,7 @@ import com.google.gson.*;
 import com.thoughtworks.go.config.CaseInsensitiveString;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Filters {
 
@@ -43,13 +42,20 @@ public class Filters {
     }
 
     private List<DashboardFilter> filters;
+    private Map<String, DashboardFilter> filterMap; // optimize for find by name
 
     public Filters(List<DashboardFilter> filters) {
         this.filters = filters;
+        this.filterMap = new HashMap<>();
+        filters.forEach((f) -> filterMap.put(f.name(), f));
+    }
+
+    public DashboardFilter named(String name) {
+        return this.filterMap.get(name);
     }
 
     public List<DashboardFilter> filters() {
-        return filters;
+        return Collections.unmodifiableList(filters);
     }
 
     static class FiltersSerializer implements JsonSerializer<Filters> {
