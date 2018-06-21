@@ -147,7 +147,15 @@ class PipelineSelectionControllerDelegateTest implements SecurityServiceTrait, C
         ]
 
         long recordId = SecureRandom.longNumber()
-        when(pipelineSelectionsService.persistSelectedPipelines(String.valueOf(recordId), currentUserLoginId(), null, payload.selections, payload.blacklist)).thenReturn(recordId)
+
+        def group1 = new BasicPipelineConfigs(group: "grp")
+        group1.add(new PipelineConfig(name: new CaseInsensitiveString("build-linux")))
+        group1.add(new PipelineConfig(name: new CaseInsensitiveString("build-windows")))
+        group1.add(new PipelineConfig(name: new CaseInsensitiveString("burp")))
+        List<PipelineConfigs> groups = [group1]
+
+        when(pipelineConfigService.viewableGroupsFor(currentUsername())).thenReturn(groups)
+        when(pipelineSelectionsService.persistSelectedPipelines(String.valueOf(recordId), currentUserLoginId(), null, Collections.singletonList("burp"), payload.blacklist)).thenReturn(recordId)
         when(systemEnvironment.isSessionCookieSecure()).thenReturn(false)
 
         httpRequestBuilder.withCookies(new Cookie("selected_pipelines", String.valueOf(recordId)))
@@ -169,8 +177,16 @@ class PipelineSelectionControllerDelegateTest implements SecurityServiceTrait, C
           selections: ['build-linux', 'build-windows'],
           blacklist : true
         ]
-
         long recordId = SecureRandom.longNumber()
+
+        def group1 = new BasicPipelineConfigs(group: "grp")
+        group1.add(new PipelineConfig(name: new CaseInsensitiveString("build-linux")))
+        group1.add(new PipelineConfig(name: new CaseInsensitiveString("build-windows")))
+        group1.add(new PipelineConfig(name: new CaseInsensitiveString("burp")))
+        List<PipelineConfigs> groups = [group1]
+
+        when(pipelineConfigService.viewableGroupsFor(currentUsername())).thenReturn(groups)
+        when(pipelineSelectionsService.persistSelectedPipelines(String.valueOf(recordId), currentUserLoginId(), null, Collections.singletonList("burp"), payload.blacklist)).thenReturn(recordId)
         when(pipelineSelectionsService.persistSelectedPipelines(String.valueOf(recordId), currentUserLoginId(), null, payload.selections, payload.blacklist)).thenReturn(recordId)
         when(systemEnvironment.isSessionCookieSecure()).thenReturn(true)
 

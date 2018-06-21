@@ -37,7 +37,7 @@ public class PipelineSelectionResponse {
         return selectedPipelines.isBlacklist();
     }
 
-    public List<String> selectedPipelinesList() {
+    public List<String> selectedPipelinesList(List<PipelineConfigs> pipelineConfigs) {
         List<String> result = new ArrayList<>();
         for (PipelineConfigs group : pipelineConfigs) {
             for (PipelineConfig pipeline : group) {

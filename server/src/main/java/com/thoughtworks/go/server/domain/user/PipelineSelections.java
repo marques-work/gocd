@@ -167,10 +167,6 @@ public class PipelineSelections extends PersistentObject implements Serializable
 
     public PipelineSelections upgrade() {
         initFilters(caseInsensitivePipelineList, isBlacklist);
-
-        caseInsensitivePipelineList = Collections.emptyList();
-        pipelines = Collections.emptyList();
-
         return this;
     }
 
@@ -181,6 +177,8 @@ public class PipelineSelections extends PersistentObject implements Serializable
                 new WhitelistFilter(null, pipelines)
         );
 
+        pipelines = Collections.emptyList();
+        caseInsensitivePipelineList = Collections.emptyList();
         this.viewFilters = new Filters(views);
         this.version = CURRENT_SCHEMA_VERSION;
     }

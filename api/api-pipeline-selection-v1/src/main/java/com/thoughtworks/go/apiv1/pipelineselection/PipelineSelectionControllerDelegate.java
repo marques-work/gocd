@@ -98,7 +98,9 @@ public class PipelineSelectionControllerDelegate extends ApiController {
 
         PipelineSelectionResponse selectionResponse = PipelineSelectionsRepresenter.fromJSON(jsonReader);
 
-        Long recordId = pipelineSelectionsService.persistSelectedPipelines(fromCookie, currentUserId(request), filterName, selectionResponse.selectedPipelinesList(), selectionResponse.isBlacklist());
+        List<PipelineConfigs> pipelineConfigs = pipelineConfigService.viewableGroupsFor(currentUsername());
+
+        Long recordId = pipelineSelectionsService.persistSelectedPipelines(fromCookie, currentUserId(request), filterName, selectionResponse.selectedPipelinesList(pipelineConfigs), selectionResponse.isBlacklist());
 
         if (!apiAuthenticationHelper.securityEnabled()) {
             response.cookie("/go", "selected_pipelines", String.valueOf(recordId), ONE_YEAR, systemEnvironment.isSessionCookieSecure(), true);

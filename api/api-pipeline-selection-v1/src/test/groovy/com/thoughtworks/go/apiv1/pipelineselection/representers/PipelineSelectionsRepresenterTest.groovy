@@ -39,12 +39,14 @@ class PipelineSelectionsRepresenterTest {
   class Serialize {
     @Test
     void 'should serialize'() {
-      def selections = new PipelineSelections(["build-linux", "build-windows"], new Date(), 10, true)
+      def selections = new PipelineSelections(["pipeline1", "pipeline2", "pipeline3"], new Date(), 10, true)
 
       def group1 = new BasicPipelineConfigs(group: "grp1")
       def group2 = new BasicPipelineConfigs(group: "grp2")
 
       group1.add(new PipelineConfig(name: new CaseInsensitiveString("pipeline3")))
+      group1.add(new PipelineConfig(name: new CaseInsensitiveString("build-linux")))
+      group1.add(new PipelineConfig(name: new CaseInsensitiveString("build-windows")))
       group2.add(new PipelineConfig(name: new CaseInsensitiveString("pipeline1")))
       group2.add(new PipelineConfig(name: new CaseInsensitiveString("pipeline2")))
 
@@ -56,7 +58,7 @@ class PipelineSelectionsRepresenterTest {
 
       JsonFluentAssert.assertThatJson(actualJson).isEqualTo([
         pipelines: [
-          grp1: ["pipeline3"],
+          grp1: ["pipeline3", "build-linux", "build-windows"],
           grp2: ["pipeline1", "pipeline2"]
         ],
         selections: ['build-linux', 'build-windows'],
@@ -66,13 +68,15 @@ class PipelineSelectionsRepresenterTest {
 
     @Test
     void 'should not serialize empty pipeline groups'() {
-      def selections = new PipelineSelections(["build-linux", "build-windows"], new Date(), 10, true)
+      def selections = new PipelineSelections(["pipeline1", "pipeline2"], new Date(), 10, true)
 
       def group1 = new BasicPipelineConfigs(group: "grp1")
       def group2 = new BasicPipelineConfigs(group: "grp2")
 
       group2.add(new PipelineConfig(name: new CaseInsensitiveString("pipeline1")))
       group2.add(new PipelineConfig(name: new CaseInsensitiveString("pipeline2")))
+      group2.add(new PipelineConfig(name: new CaseInsensitiveString("build-linux")))
+      group2.add(new PipelineConfig(name: new CaseInsensitiveString("build-windows")))
 
       List<PipelineConfigs> pipelineConfigs = [group1, group2]
 
@@ -82,7 +86,7 @@ class PipelineSelectionsRepresenterTest {
 
       JsonFluentAssert.assertThatJson(actualJson).isEqualTo([
         pipelines: [
-          grp2: ["pipeline1", "pipeline2"]
+          grp2: ["pipeline1", "pipeline2", "build-linux", "build-windows"]
         ],
         selections: ['build-linux', 'build-windows'],
         blacklist: true
@@ -95,12 +99,20 @@ class PipelineSelectionsRepresenterTest {
     @Test
     void 'should deserialize'() {
       def json = [
-        selections: ['build-linux', 'build-windows'],
+        selections: ['pipeline1', 'pipeline2'],
         blacklist : true
       ]
+      def group = new BasicPipelineConfigs(group: "grp2")
+
+      group.add(new PipelineConfig(name: new CaseInsensitiveString("pipeline1")))
+      group.add(new PipelineConfig(name: new CaseInsensitiveString("pipeline2")))
+      group.add(new PipelineConfig(name: new CaseInsensitiveString("build-linux")))
+      group.add(new PipelineConfig(name: new CaseInsensitiveString("build-windows")))
+
+      List<PipelineConfigs> pipelineConfigs = [group]
 
       PipelineSelectionResponse response = PipelineSelectionsRepresenter.fromJSON(GsonTransformer.getInstance().jsonReaderFrom(json))
-      Assertions.assertThat(response.selectedPipelinesList()).isEqualTo(["build-linux", "build-windows"])
+      Assertions.assertThat(response.selectedPipelinesList(pipelineConfigs)).isEqualTo(["build-linux", "build-windows"])
       Assertions.assertThat(response.isBlacklist()).isTrue()
     }
 
