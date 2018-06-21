@@ -20,6 +20,6 @@ import com.thoughtworks.go.config.CaseInsensitiveString;
 
 public interface DashboardFilter {
     String name();
+
     boolean isPipelineVisible(CaseInsensitiveString pipeline);
-    void matchingStageState(String state);
 }

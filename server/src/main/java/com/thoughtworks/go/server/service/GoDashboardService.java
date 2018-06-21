@@ -83,7 +83,7 @@ public class GoDashboardService {
 
         if (goDashboardPipelineGroup.hasPermissions() && goDashboardPipelineGroup.canBeViewedBy(user.getUsername().toString())) {
             pipelineGroup.accept(pipelineConfig -> {
-                if (pipelineSelections.includesPipeline(pipelineConfig)) {
+                if (pipelineSelections.includesPipeline(pipelineConfig.name())) {
                     goDashboardPipelineGroup.addPipeline(allPipelines.find(pipelineConfig.getName()));
                 }
             });

@@ -44,7 +44,7 @@ class FiltersTest {
     void toJson() {
         List<DashboardFilter> views = new ArrayList<>();
         final List<CaseInsensitiveString> pipelines = Collections.singletonList(new CaseInsensitiveString("Pipely McPipe"));
-        final BlacklistFilter first = new BlacklistFilter("Cool Pipelines", null, pipelines);
+        final BlacklistFilter first = new BlacklistFilter("Cool Pipelines", pipelines);
         views.add(first);
         final Filters filters = new Filters(views);
 

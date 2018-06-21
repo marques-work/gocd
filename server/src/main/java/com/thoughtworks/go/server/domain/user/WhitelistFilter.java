@@ -21,13 +21,11 @@ import com.thoughtworks.go.config.CaseInsensitiveString;
 import java.util.Collection;
 
 public class WhitelistFilter implements DashboardFilter {
-    private String name;
-    private String state;
-    private Collection<CaseInsensitiveString> pipelines;
+    private final String name;
+    private final Collection<CaseInsensitiveString> pipelines;
 
-    public WhitelistFilter(String name, String state, Collection<CaseInsensitiveString> pipelines) {
+    public WhitelistFilter(String name, Collection<CaseInsensitiveString> pipelines) {
         this.name = name;
-        this.state = state;
         this.pipelines = pipelines;
     }
 
@@ -43,10 +41,5 @@ public class WhitelistFilter implements DashboardFilter {
     @Override
     public boolean isPipelineVisible(CaseInsensitiveString pipeline) {
         return null != pipelines && pipelines.contains(pipeline);
-    }
-
-    @Override
-    public void matchingStageState(String state) {
-        this.state = state;
     }
 }

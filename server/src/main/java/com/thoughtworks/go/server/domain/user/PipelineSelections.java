@@ -27,9 +27,9 @@ import java.io.Serializable;
 import java.util.*;
 
 public class PipelineSelections extends PersistentObject implements Serializable {
+
     private static int CURRENT_SCHEMA_VERSION = 1;
 
-    private Date lastUpdate;
     public static final PipelineSelections ALL = new PipelineSelections() {
         @Override
         public boolean includesGroup(PipelineConfigs group) {
@@ -37,7 +37,7 @@ public class PipelineSelections extends PersistentObject implements Serializable
         }
 
         @Override
-        public boolean includesPipeline(PipelineConfig pipeline) {
+        public boolean includesPipeline(CaseInsensitiveString pipelineName) {
             return true;
         }
     };
@@ -46,33 +46,9 @@ public class PipelineSelections extends PersistentObject implements Serializable
     private Long userId;
     private List<CaseInsensitiveString> caseInsensitivePipelineList = new ArrayList<>();
     private boolean isBlacklist;
-    private Filters viewFilters;
+    private Date lastUpdate;
+    private Filters viewFilters = new Filters(Collections.emptyList());
     private int version;
-
-    public String getFilters() {
-        return Filters.toJson(this.viewFilters);
-    }
-
-    public void setFilters(String filters) {
-        this.viewFilters = Filters.fromJson(filters);
-    }
-
-    protected Filters viewFilters() {
-        if (null == viewFilters) return new Filters(Collections.singletonList(Filters.DEFAULT));
-        return viewFilters;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
-    public boolean needsUpgrade() {
-        return CURRENT_SCHEMA_VERSION > version;
-    }
 
     public PipelineSelections() {
         this(new ArrayList<>());
@@ -83,7 +59,32 @@ public class PipelineSelections extends PersistentObject implements Serializable
     }
 
     public PipelineSelections(List<String> unselectedPipelines, Date date, Long userId, boolean isBlacklist) {
+        this.userId = userId;
         update(unselectedPipelines, date, userId, isBlacklist);
+    }
+
+    public String getFilters() {
+        return Filters.toJson(this.viewFilters);
+    }
+
+    public void setFilters(String filters) {
+        this.viewFilters = Filters.fromJson(filters);
+    }
+
+    public Filters viewFilters() {
+        return viewFilters;
+    }
+
+    public void addNamedFilter(DashboardFilter filter) {
+        this.viewFilters.addFilter(filter);
+    }
+
+    public int version() {
+        return version;
+    }
+
+    public boolean needsUpgrade() {
+        return CURRENT_SCHEMA_VERSION > version;
     }
 
     public Date lastUpdated() {
@@ -99,24 +100,15 @@ public class PipelineSelections extends PersistentObject implements Serializable
 
     public boolean includesGroup(PipelineConfigs group) {
         for (PipelineConfig pipelineConfig : group) {
-            if (!includesPipeline(pipelineConfig)) {
+            if (!includesPipeline(pipelineConfig.name())) {
                 return false;
             }
         }
         return true;
     }
 
-    public boolean includesPipeline(PipelineConfig pipeline) {
-        return includesPipeline(pipeline.name());
-    }
-
     public boolean includesPipeline(CaseInsensitiveString pipelineName) {
-        boolean isInCurrentSelection = caseInsensitivePipelineList().contains(pipelineName);
-
-        if (isBlacklist) {
-            return !isInCurrentSelection;
-        }
-        return isInCurrentSelection;
+        return viewFilters().named(null).isPipelineVisible(pipelineName);
     }
 
     public List<String> pipelineList() {
@@ -143,10 +135,6 @@ public class PipelineSelections extends PersistentObject implements Serializable
 
     public static PipelineSelections singleSelection(final String pipelineName) {
         return new PipelineSelections() {
-            @Override
-            public boolean includesPipeline(PipelineConfig pipeline) {
-                return compare(pipelineName, CaseInsensitiveString.str(pipeline.name()));
-            }
 
             @Override
             public boolean includesPipeline(CaseInsensitiveString pipeline) {
@@ -174,13 +162,15 @@ public class PipelineSelections extends PersistentObject implements Serializable
 
     public PipelineSelections upgrade() {
         ArrayList<DashboardFilter> views = new ArrayList<>();
-
         this.viewFilters = new Filters(views);
 
         views.add(isBlacklist ?
-                new BlacklistFilter(null, null, caseInsensitivePipelineList) :
-                new WhitelistFilter(null, null, caseInsensitivePipelineList)
+                new BlacklistFilter(null, caseInsensitivePipelineList) :
+                new WhitelistFilter(null, caseInsensitivePipelineList)
         );
+
+        caseInsensitivePipelineList = Collections.emptyList();
+        pipelines = Collections.emptyList();
 
         this.version = CURRENT_SCHEMA_VERSION;
 

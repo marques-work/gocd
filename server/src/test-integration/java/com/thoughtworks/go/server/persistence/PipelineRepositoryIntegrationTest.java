@@ -17,6 +17,7 @@
 package com.thoughtworks.go.server.persistence;
 
 import com.rits.cloning.Cloner;
+import com.thoughtworks.go.config.CaseInsensitiveString;
 import com.thoughtworks.go.config.CruiseConfig;
 import com.thoughtworks.go.config.GoConfigDao;
 import com.thoughtworks.go.config.PipelineConfig;
@@ -55,12 +56,12 @@ import java.util.*;
 
 import static com.thoughtworks.go.helper.ModificationsMother.oneModifiedFile;
 import static com.thoughtworks.go.helper.PipelineConfigMother.createPipelineConfig;
-import static com.thoughtworks.go.helper.PipelineConfigMother.pipelineConfig;
 import static com.thoughtworks.go.util.DataStructureUtils.a;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.*;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {
         "classpath:WEB-INF/applicationContext-global.xml",
@@ -69,8 +70,7 @@ import static org.junit.Assert.*;
 })
 public class PipelineRepositoryIntegrationTest {
 
-    @Autowired
-    PipelineSqlMapDao pipelineSqlMapDao;
+    @Autowired PipelineSqlMapDao pipelineSqlMapDao;
     @Autowired DatabaseAccessHelper dbHelper;
     @Autowired PipelineRepository pipelineRepository;
     @Autowired MaterialRepository materialRepository;
@@ -386,7 +386,7 @@ public class PipelineRepositoryIntegrationTest {
 
     private void assertHasPipelines(PipelineSelections pipelineSelections, String[] pipelines, boolean has) {
         for (String pipeline : pipelines) {
-            assertThat(pipelineSelections.includesPipeline(pipelineConfig(pipeline)),is(has));
+            assertThat(pipelineSelections.includesPipeline(new CaseInsensitiveString(pipeline)), is(has));
         }
     }
 }

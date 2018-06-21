@@ -18,8 +18,6 @@ package com.thoughtworks.go.apiv1.pipelineselection.representers;
 
 import com.thoughtworks.go.api.base.OutputWriter;
 import com.thoughtworks.go.api.representers.JsonReader;
-import com.thoughtworks.go.config.CaseInsensitiveString;
-import com.thoughtworks.go.config.PipelineConfig;
 import com.thoughtworks.go.server.domain.user.PipelineSelections;
 
 import java.util.Collections;
@@ -29,8 +27,8 @@ import java.util.stream.Collectors;
 
 public class PipelineSelectionsRepresenter {
     public static void toJSON(OutputWriter writer, PipelineSelectionResponse pipelineSelectionResponse) {
-        writer.addChildList("selections", pipelineSelectionResponse.getSelectedPipelines().pipelineList())
-            .add("blacklist", pipelineSelectionResponse.getSelectedPipelines().isBlacklist())
+        writer.addChildList("selections", pipelineSelectionResponse.selectedPipelinesList())
+            .add("blacklist", pipelineSelectionResponse.isBlacklist())
             .addChild("pipelines", pipelineGroupsWriter -> {
                 pipelineSelectionResponse.getPipelineConfigs().forEach(pipelineConfigs -> {
                     List<String> pipelineNames = pipelineConfigs

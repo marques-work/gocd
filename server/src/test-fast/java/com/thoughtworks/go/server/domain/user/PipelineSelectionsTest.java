@@ -32,8 +32,8 @@ public class PipelineSelectionsTest {
         PipelineSelections pipelineSelections = new PipelineSelections(Arrays.asList("pipeline1"));
         assertThat(pipelineSelections.includesGroup(createGroup("group1", pipelineConfig("pipelineX"))), is(true));
         assertThat(pipelineSelections.includesGroup(createGroup("group2", pipelineConfig("pipeline2"), pipelineConfig("pipeline1"))), is(false));
-        assertThat(pipelineSelections.includesPipeline(pipelineConfig("pipeline1")), is(false));
-        assertThat(pipelineSelections.includesPipeline(pipelineConfig("pipeline2")), is(true));
+        assertThat(pipelineSelections.includesPipeline(new CaseInsensitiveString("pipeline1")), is(false));
+        assertThat(pipelineSelections.includesPipeline(new CaseInsensitiveString("pipeline2")), is(true));
     }
 
     @Test
@@ -47,13 +47,13 @@ public class PipelineSelectionsTest {
     public void shouldReturnASelectionForASinglePipeline_whenBlacklistIsEnabled() {
         PipelineSelections selections = PipelineSelections.singleSelection("pipeline");
         assertThat(selections.includesPipeline(new CaseInsensitiveString("pipeline")), is(true));
-        assertThat(selections.includesPipeline(pipelineConfig("pipeline")), is(true));
+        assertThat(selections.includesPipeline(new CaseInsensitiveString("pipeline")), is(true));
 
         assertThat(selections.includesPipeline(new CaseInsensitiveString("PIPELINE")), is(true));
-        assertThat(selections.includesPipeline(pipelineConfig("PIPELINE")), is(true));
+        assertThat(selections.includesPipeline(new CaseInsensitiveString("PIPELINE")), is(true));
 
         assertThat(selections.includesPipeline(new CaseInsensitiveString("foo")), is(false));
-        assertThat(selections.includesPipeline(pipelineConfig("foo")), is(false));
+        assertThat(selections.includesPipeline(new CaseInsensitiveString("foo")), is(false));
     }
 
     @Test
@@ -65,7 +65,7 @@ public class PipelineSelectionsTest {
         assertThat(pipelineSelections.includesGroup(createGroup("group4", pipelineConfig("pipeline1"))), is(true));
         assertThat(pipelineSelections.includesGroup(createGroup("group5", pipelineConfig("pipeline1"), pipelineConfig("pipelineY"))), is(true));
 
-        assertThat(pipelineSelections.includesPipeline(pipelineConfig("pipeline1")), is(true));
-        assertThat(pipelineSelections.includesPipeline(pipelineConfig("pipeline2")), is(false));
+        assertThat(pipelineSelections.includesPipeline(new CaseInsensitiveString("pipeline1")), is(true));
+        assertThat(pipelineSelections.includesPipeline(new CaseInsensitiveString("pipeline2")), is(false));
     }
 }

@@ -18,7 +18,10 @@ package com.thoughtworks.go.server.service;
 
 import com.thoughtworks.go.config.CaseInsensitiveString;
 import com.thoughtworks.go.config.PipelineConfig;
+import com.thoughtworks.go.server.domain.user.BlacklistFilter;
+import com.thoughtworks.go.server.domain.user.DashboardFilter;
 import com.thoughtworks.go.server.domain.user.PipelineSelections;
+import com.thoughtworks.go.server.domain.user.WhitelistFilter;
 import com.thoughtworks.go.server.persistence.PipelineRepository;
 import com.thoughtworks.go.util.Clock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PipelineSelectionsService {
@@ -48,24 +52,13 @@ public class PipelineSelectionsService {
         return pipelineSelections;
     }
 
-    public PipelineSelections getSelectedPipelines(String id, Long userId){
-        PipelineSelections persistedPipelineSelections = getPersistedSelectedPipelines(id, userId);
-        if(persistedPipelineSelections.isBlacklist()){
-            List<String> invertedPipelineSelections = invertSelections(persistedPipelineSelections.pipelineList());
-            return new PipelineSelections(invertedPipelineSelections, persistedPipelineSelections.lastUpdated(), persistedPipelineSelections.userId(), persistedPipelineSelections.isBlacklist());
-        }
-        return persistedPipelineSelections;
-    }
-
-    public long persistSelectedPipelines(String id, Long userId, List<String> selectedPipelines, boolean isBlacklist) {
+    public long persistSelectedPipelines(String id, Long userId, String name, List<String> selectedPipelines, boolean isBlacklist) {
         PipelineSelections pipelineSelections = findOrCreateCurrentPipelineSelectionsFor(id, userId);
 
-        if (isBlacklist) {
-            List<String> unselectedPipelines = invertSelections(selectedPipelines);
-            pipelineSelections.update(unselectedPipelines, clock.currentTime(), userId, isBlacklist);
-        } else {
-            pipelineSelections.update(selectedPipelines, clock.currentTime(), userId, isBlacklist);
-        }
+        final List<CaseInsensitiveString> pipelines = isBlacklist ? invertSelections(selectedPipelines) : selectedPipelines.stream().map(CaseInsensitiveString::new).collect(Collectors.toList());
+
+        DashboardFilter namedFilter = isBlacklist ? new BlacklistFilter(name, pipelines) : new WhitelistFilter(name, pipelines);
+        pipelineSelections.addNamedFilter(namedFilter);
 
         return pipelineRepository.saveSelectedPipelines(pipelineSelections);
     }
@@ -78,13 +71,12 @@ public class PipelineSelectionsService {
         return pipelineSelections;
     }
 
-    private List<String> invertSelections(List<String> selectedPipelines) {
-        List<String> unselectedPipelines = new ArrayList<>();
+    private List<CaseInsensitiveString> invertSelections(List<String> selectedPipelines) {
+        List<CaseInsensitiveString> unselectedPipelines = new ArrayList<>();
         List<PipelineConfig> pipelineConfigList = goConfigService.getAllPipelineConfigs();
         for (PipelineConfig pipelineConfig : pipelineConfigList) {
-            String pipelineName = CaseInsensitiveString.str(pipelineConfig.name());
-            if (!selectedPipelines.contains(pipelineName)) {
-                unselectedPipelines.add(pipelineName);
+            if (!selectedPipelines.contains(CaseInsensitiveString.str(pipelineConfig.name()))) {
+                unselectedPipelines.add(pipelineConfig.name());
             }
         }
         return unselectedPipelines;

@@ -23,8 +23,9 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 public class Filters {
-    public static DashboardFilter DEFAULT = new BlacklistFilter(null, null, Collections.EMPTY_LIST);
-    public static final Gson GSON = new GsonBuilder().
+    public static DashboardFilter DEFAULT = new BlacklistFilter(null, Collections.emptyList());
+
+    private static final Gson GSON = new GsonBuilder().
             registerTypeAdapter(Filters.class, new FiltersDeserializer()).
             registerTypeAdapter(Filters.class, new FiltersSerializer()).
             registerTypeAdapter(DashboardFilter.class, new DashboardFilterDeserializer()).
@@ -46,17 +47,37 @@ public class Filters {
 
     public Filters(List<DashboardFilter> filters) {
         this.filters = filters;
-        this.filterMap = new HashMap<>();
-        filters.forEach((f) -> filterMap.put(f.name(), f));
+        updateIndex(this.filters);
+    }
+
+    public void addFilter(DashboardFilter filter) {
+        List<DashboardFilter> newFilters = new ArrayList<>();
+        newFilters.addAll(filters);
+
+        if (filterMap.containsKey(filter.name())) {
+            final DashboardFilter existing = filterMap.get(filter.name());
+            final int existingIndex = newFilters.indexOf(existing);
+            newFilters.remove(existing);
+            newFilters.add(existingIndex, filter);
+        } else {
+            newFilters.add(filter);
+        }
+
+        this.filters = newFilters;
+        updateIndex(filters);
     }
 
     public DashboardFilter named(String name) {
-        if (this.filterMap.containsKey(name)) return this.filterMap.get(name);
-        return DEFAULT;
+        return this.filterMap.get(name);
     }
 
     public List<DashboardFilter> filters() {
         return Collections.unmodifiableList(filters);
+    }
+
+    private void updateIndex(List<DashboardFilter> filters) {
+        this.filterMap = new HashMap<>();
+        filters.forEach((f) -> filterMap.put(f.name(), f));
     }
 
     static class FiltersSerializer implements JsonSerializer<Filters> {

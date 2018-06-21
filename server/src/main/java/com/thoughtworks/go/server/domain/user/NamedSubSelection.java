@@ -18,24 +18,21 @@ package com.thoughtworks.go.server.domain.user;
 
 import com.thoughtworks.go.config.CaseInsensitiveString;
 
-import java.util.Collection;
+public class NamedSubSelection extends PipelineSelections {
+    private final DashboardFilter currentFilter;
 
-public class BlacklistFilter implements DashboardFilter {
-    private final String name;
-    private final Collection<CaseInsensitiveString> pipelines;
-
-    public BlacklistFilter(String name, Collection<CaseInsensitiveString> pipelines) {
-        this.name = name;
-        this.pipelines = pipelines;
+    public NamedSubSelection(PipelineSelections parent, String filterName) {
+        final DashboardFilter namedFilter = parent.viewFilters().named(filterName);
+        currentFilter = null == namedFilter ? Filters.DEFAULT : namedFilter;
     }
 
     @Override
-    public String name() {
-        return name;
+    public boolean includesPipeline(CaseInsensitiveString pipelineName) {
+        return currentFilter.isPipelineVisible(pipelineName);
     }
 
     @Override
-    public boolean isPipelineVisible(CaseInsensitiveString pipeline) {
-        return null == pipelines || !pipelines.contains(pipeline);
+    public boolean isBlacklist() {
+        return currentFilter instanceof BlacklistFilter;
     }
 }

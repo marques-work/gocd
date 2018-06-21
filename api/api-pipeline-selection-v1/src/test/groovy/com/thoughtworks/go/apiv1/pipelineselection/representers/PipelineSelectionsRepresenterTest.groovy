@@ -100,8 +100,8 @@ class PipelineSelectionsRepresenterTest {
       ]
 
       PipelineSelectionResponse response = PipelineSelectionsRepresenter.fromJSON(GsonTransformer.getInstance().jsonReaderFrom(json))
-      Assertions.assertThat(response.selectedPipelines.pipelineList()).isEqualTo(["build-linux", "build-windows"])
-      Assertions.assertThat(response.selectedPipelines.isBlacklist()).isTrue()
+      Assertions.assertThat(response.selectedPipelinesList()).isEqualTo(["build-linux", "build-windows"])
+      Assertions.assertThat(response.isBlacklist()).isTrue()
     }
 
     @Test

@@ -137,7 +137,7 @@ public class PipelineSelectionsServiceTest {
         when(goConfigService.getAllPipelineConfigs()).thenReturn(Arrays.asList(pipelineConfig("pipeline1"), pipelineConfig("pipeline2"), pipelineConfig("pipelineX"), pipelineConfig("pipeline3")));
         ArgumentMatcher<PipelineSelections> pipelineSelectionsMatcher = hasValues(Arrays.asList("pipelineX", "pipeline3"), Arrays.asList("pipeline1", "pipeline2"), date, null);
         when(pipelineRepository.saveSelectedPipelines(argThat(pipelineSelectionsMatcher))).thenReturn(2L);
-        assertThat(pipelineSelectionsService.persistSelectedPipelines(null, null, Arrays.asList("pipelineX", "pipeline3"), true), is(2l));
+        assertThat(pipelineSelectionsService.persistSelectedPipelines(null, null, null, Arrays.asList("pipelineX", "pipeline3"), true), is(2l));
         verify(pipelineRepository).saveSelectedPipelines(argThat(pipelineSelectionsMatcher));
     }
 
@@ -153,7 +153,7 @@ public class PipelineSelectionsServiceTest {
         when(pipelineRepository.findPipelineSelectionsByUserId(user.getId())).thenReturn(pipelineSelections);
         when(pipelineRepository.saveSelectedPipelines(pipelineSelections)).thenReturn(2L);
 
-        long pipelineSelectionId = pipelineSelectionsService.persistSelectedPipelines("1", user.getId(), Arrays.asList("pipelineX", "pipeline3"), true);
+        long pipelineSelectionId = pipelineSelectionsService.persistSelectedPipelines("1", user.getId(), null, Arrays.asList("pipelineX", "pipeline3"), true);
 
         assertThat(pipelineSelections.getSelections(), is("pipeline1,pipeline2"));
         assertThat(pipelineSelectionId, is(2l));
@@ -173,7 +173,7 @@ public class PipelineSelectionsServiceTest {
         when(goConfigService.getAllPipelineConfigs()).thenReturn(Arrays.asList(pipelineConfig("pipeline1"), pipelineConfig("pipeline2"), pipelineConfig("pipelineX"), pipelineConfig("pipeline3")));
         when(goConfigService.isSecurityEnabled()).thenReturn(true);
 
-        long pipelineSelectionsId = pipelineSelectionsService.persistSelectedPipelines("1", user.getId(), Arrays.asList("pipelineX", "pipeline3"), true);
+        long pipelineSelectionsId = pipelineSelectionsService.persistSelectedPipelines("1", user.getId(), null, Arrays.asList("pipelineX", "pipeline3"), true);
 
         assertThat(pipelineSelectionsId, is(2l));
         verify(pipelineRepository).saveSelectedPipelines(argThat(pipelineSelectionsMatcher));
@@ -184,7 +184,7 @@ public class PipelineSelectionsServiceTest {
     @Test
     public void shouldPersistPipelineSelectionsShouldRemovePipelinesFromSelectedGroups() {
         when(goConfigService.getAllPipelineConfigs()).thenReturn(Arrays.asList(pipelineConfig("pipeline1"), pipelineConfig("pipeline2"), pipelineConfig("pipelineX"), pipelineConfig("pipeline3"), pipelineConfig("pipeline4")));
-        pipelineSelectionsService.persistSelectedPipelines(null, null, Arrays.asList("pipeline1", "pipeline2", "pipeline3"), true);
+        pipelineSelectionsService.persistSelectedPipelines(null, null, null, Arrays.asList("pipeline1", "pipeline2", "pipeline3"), true);
         verify(pipelineRepository).saveSelectedPipelines(argThat(hasValues(Arrays.asList("pipeline1", "pipeline2", "pipeline3"), Arrays.asList("pipelineX", "pipeline4"), clock.currentTime(), null)));
     }
 
@@ -199,7 +199,7 @@ public class PipelineSelectionsServiceTest {
         PipelineSelections blacklistPipelineSelections = new PipelineSelections(new ArrayList<String>(), date, user.getId(), false);
         when(pipelineRepository.findPipelineSelectionsByUserId(user.getId())).thenReturn(blacklistPipelineSelections);
 
-        pipelineSelectionsService.persistSelectedPipelines(null, user.getId(), Arrays.asList("pipelineX", "pipeline3"), true);
+        pipelineSelectionsService.persistSelectedPipelines(null, user.getId(), null, Arrays.asList("pipelineX", "pipeline3"), true);
 
         verify(pipelineRepository).saveSelectedPipelines(argThat(isAPipelineSelectionsInstanceWith(true, "pipeline1", "pipeline2")));
     }
@@ -215,7 +215,7 @@ public class PipelineSelectionsServiceTest {
         PipelineSelections whitelistPipelineSelections = new PipelineSelections(new ArrayList<String>(), date, user.getId(), true);
         when(pipelineRepository.findPipelineSelectionsByUserId(user.getId())).thenReturn(whitelistPipelineSelections);
 
-        pipelineSelectionsService.persistSelectedPipelines(null, user.getId(), Arrays.asList("pipelineX", "pipeline3"), false);
+        pipelineSelectionsService.persistSelectedPipelines(null, user.getId(), null, Arrays.asList("pipelineX", "pipeline3"), false);
 
         verify(pipelineRepository).saveSelectedPipelines(argThat(isAPipelineSelectionsInstanceWith(false, "pipelineX", "pipeline3")));
     }
@@ -229,7 +229,7 @@ public class PipelineSelectionsServiceTest {
         when(pipelineRepository.findPipelineSelectionsById("123")).thenReturn(pipelineSelections);
         List<String> newPipelines = Arrays.asList("pipeline1", "pipeline2");
 
-        pipelineSelectionsService.persistSelectedPipelines("123", null, newPipelines, true);
+        pipelineSelectionsService.persistSelectedPipelines("123", null, null, newPipelines, true);
 
         assertHasSelected(pipelineSelections, newPipelines);
         assertThat(pipelineSelections.lastUpdated(), is(date));
@@ -289,21 +289,6 @@ public class PipelineSelectionsServiceTest {
     }
 
     @Test
-    public void shouldReturnSelectedPipelinesRegardlessOfPersistedPipelineSelections() throws Exception {
-        User user = getUser("loser", 10L);
-        when(goConfigService.getAllPipelineConfigs()).thenReturn(Arrays.asList(pipelineConfig("pipeline1"), pipelineConfig("pipeline2"), pipelineConfig("pipelineX"), pipelineConfig("pipeline3")));
-        when(goConfigService.isSecurityEnabled()).thenReturn(true);
-        PipelineSelections pipelineSelections = new PipelineSelections(Arrays.asList("pipeline2"));
-
-        when(pipelineRepository.findPipelineSelectionsByUserId(user.getId())).thenReturn(pipelineSelections);
-
-
-        PipelineSelections selectedPipelines = pipelineSelectionsService.getSelectedPipelines("1", user.getId());
-        assertThat(selectedPipelines.isBlacklist(), is(true));
-        assertThat(selectedPipelines.pipelineList(), is(Arrays.asList("pipeline1", "pipelineX", "pipeline3")));
-    }
-
-    @Test
     public void shouldReturnAllPipelinesWhenThereAreNoPreviouslyPersistedPipelineSelections() {
         User user = getUser("loser", 10L);
         when(goConfigService.getAllPipelineConfigs()).thenReturn(Arrays.asList(pipelineConfig("pipeline1"), pipelineConfig("pipeline2"), pipelineConfig("pipelineX"), pipelineConfig("pipeline3")));
@@ -312,7 +297,7 @@ public class PipelineSelectionsServiceTest {
 
         when(pipelineRepository.findPipelineSelectionsByUserId(user.getId())).thenReturn(null);
 
-        PipelineSelections selectedPipelines = pipelineSelectionsService.getSelectedPipelines("1", user.getId());
+        PipelineSelections selectedPipelines = pipelineSelectionsService.getPersistedSelectedPipelines("1", user.getId());
         List<String> actualPipelineList = selectedPipelines.pipelineList();
         assertThat(actualPipelineList, is(expectedPipelineList));
     }
@@ -372,7 +357,7 @@ public class PipelineSelectionsServiceTest {
     private void assertHasSelected(PipelineSelections pipelineSelections, List<String> pipelines, boolean has) {
         String message = "Expected: " + pipelines + " to include " + pipelineSelections + ": (" + has + ").";
         for (String pipeline : pipelines) {
-            assertThat(message + ". Failed to find: " + pipeline, pipelineSelections.includesPipeline(pipelineConfig(pipeline)), is(has));
+            assertThat(message + ". Failed to find: " + pipeline, pipelineSelections.includesPipeline(pipelineConfig(pipeline).name()), is(has));
         }
     }
 
