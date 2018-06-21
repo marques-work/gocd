@@ -59,6 +59,7 @@ public class PipelineSelectionsService {
 
         DashboardFilter namedFilter = isBlacklist ? new BlacklistFilter(name, pipelines) : new WhitelistFilter(name, pipelines);
         pipelineSelections.addNamedFilter(namedFilter);
+        pipelineSelections.touch(clock.currentTime(), userId);
 
         return pipelineRepository.saveSelectedPipelines(pipelineSelections);
     }

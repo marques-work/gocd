@@ -35,7 +35,9 @@ public class Filters {
             create();
 
     public static Filters fromJson(String json) {
-        return GSON.fromJson(json, Filters.class);
+        final Filters filters = GSON.fromJson(json, Filters.class);
+        filters.updateIndex();
+        return filters;
     }
 
     public static String toJson(Filters filters) {
@@ -47,15 +49,17 @@ public class Filters {
 
     public Filters(List<DashboardFilter> filters) {
         this.filters = filters;
-        updateIndex(this.filters);
+        updateIndex();
     }
 
     public void addFilter(DashboardFilter filter) {
         List<DashboardFilter> newFilters = new ArrayList<>();
         newFilters.addAll(filters);
 
-        if (filterMap.containsKey(filter.name())) {
-            final DashboardFilter existing = filterMap.get(filter.name());
+        String key = null != filter.name() ? filter.name() : "";
+
+        if (filterMap.containsKey(key)) {
+            final DashboardFilter existing = filterMap.get(key);
             final int existingIndex = newFilters.indexOf(existing);
             newFilters.remove(existing);
             newFilters.add(existingIndex, filter);
@@ -64,20 +68,21 @@ public class Filters {
         }
 
         this.filters = newFilters;
-        updateIndex(filters);
+        updateIndex();
     }
 
     public DashboardFilter named(String name) {
-        return this.filterMap.get(name);
+        if (null == name) name = "";
+        return this.filterMap.containsKey(name) ? this.filterMap.get(name) : DEFAULT;
     }
 
     public List<DashboardFilter> filters() {
         return Collections.unmodifiableList(filters);
     }
 
-    private void updateIndex(List<DashboardFilter> filters) {
+    private void updateIndex() {
         this.filterMap = new HashMap<>();
-        filters.forEach((f) -> filterMap.put(f.name(), f));
+        this.filters.forEach((f) -> filterMap.put(null != f.name() ? f.name() : "", f));
     }
 
     static class FiltersSerializer implements JsonSerializer<Filters> {

@@ -21,12 +21,13 @@ import com.thoughtworks.go.config.materials.MaterialConfigs;
 import com.thoughtworks.go.config.registry.ConfigElementImplementationRegistry;
 import com.thoughtworks.go.domain.User;
 import com.thoughtworks.go.server.dao.UserDao;
+import com.thoughtworks.go.server.domain.user.BlacklistFilter;
 import com.thoughtworks.go.server.domain.user.PipelineSelections;
+import com.thoughtworks.go.server.domain.user.WhitelistFilter;
 import com.thoughtworks.go.server.persistence.PipelineRepository;
 import com.thoughtworks.go.util.Clock;
 import com.thoughtworks.go.util.ConfigElementImplementationRegistryMother;
 import com.thoughtworks.go.util.SystemEnvironment;
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.thoughtworks.go.helper.ConfigFileFixture.configWith;
 import static com.thoughtworks.go.helper.PipelineConfigMother.pipelineConfig;
@@ -155,7 +157,7 @@ public class PipelineSelectionsServiceTest {
 
         long pipelineSelectionId = pipelineSelectionsService.persistSelectedPipelines("1", user.getId(), null, Arrays.asList("pipelineX", "pipeline3"), true);
 
-        assertThat(pipelineSelections.getSelections(), is("pipeline1,pipeline2"));
+        assertEquals(getSelections(pipelineSelections), asPipelineNamesList(Arrays.asList("pipeline1", "pipeline2")));
         assertThat(pipelineSelectionId, is(2l));
         verify(pipelineRepository).saveSelectedPipelines(pipelineSelections);
         verify(pipelineRepository).findPipelineSelectionsByUserId(user.getId());
@@ -291,15 +293,11 @@ public class PipelineSelectionsServiceTest {
     @Test
     public void shouldReturnAllPipelinesWhenThereAreNoPreviouslyPersistedPipelineSelections() {
         User user = getUser("loser", 10L);
-        when(goConfigService.getAllPipelineConfigs()).thenReturn(Arrays.asList(pipelineConfig("pipeline1"), pipelineConfig("pipeline2"), pipelineConfig("pipelineX"), pipelineConfig("pipeline3")));
         when(goConfigService.isSecurityEnabled()).thenReturn(true);
-        List<String> expectedPipelineList = Arrays.asList("pipeline1", "pipeline2", "pipelineX", "pipeline3");
-
         when(pipelineRepository.findPipelineSelectionsByUserId(user.getId())).thenReturn(null);
 
         PipelineSelections selectedPipelines = pipelineSelectionsService.getPersistedSelectedPipelines("1", user.getId());
-        List<String> actualPipelineList = selectedPipelines.pipelineList();
-        assertThat(actualPipelineList, is(expectedPipelineList));
+        assertEquals(selectedPipelines, PipelineSelections.ALL);
     }
 
     private PipelineConfig createPipelineConfig(String pipelineName, String stageName, String... buildNames) {
@@ -340,10 +338,12 @@ public class PipelineSelectionsServiceTest {
     private ArgumentMatcher<PipelineSelections> isAPipelineSelectionsInstanceWith(final boolean isBlacklist, final String... pipelineSelectionsInInstance) {
         return new ArgumentMatcher<PipelineSelections>() {
             public boolean matches(PipelineSelections o) {
-                assertThat(o.isBlacklist(), is(isBlacklist));
+                assertEquals(o.isBlacklist(), isBlacklist);
 
-                List<String> expectedSelectionsAsList = Arrays.asList(pipelineSelectionsInInstance);
-                assertEquals(o.getSelections(), StringUtils.join(expectedSelectionsAsList, ","));
+                List<CaseInsensitiveString> expectedSelectionsAsList = asPipelineNamesList(Arrays.asList(pipelineSelectionsInInstance));
+                List<CaseInsensitiveString> selections = getSelections(o);
+
+                assertEquals(selections, expectedSelectionsAsList);
 
                 return true;
             }
@@ -359,6 +359,17 @@ public class PipelineSelectionsServiceTest {
         for (String pipeline : pipelines) {
             assertThat(message + ". Failed to find: " + pipeline, pipelineSelections.includesPipeline(pipelineConfig(pipeline).name()), is(has));
         }
+    }
+
+    private List<CaseInsensitiveString> getSelections(PipelineSelections p) {
+        if (p.activeFilter() instanceof BlacklistFilter) {
+            return ((BlacklistFilter) p.activeFilter()).pipelines();
+        }
+        return ((WhitelistFilter) p.activeFilter()).pipelines();
+    }
+
+    private List<CaseInsensitiveString> asPipelineNamesList(List<String> list) {
+        return list.stream().map(CaseInsensitiveString::new).collect(Collectors.toList());
     }
 
     private void expectLoad(final CruiseConfig result) throws Exception {

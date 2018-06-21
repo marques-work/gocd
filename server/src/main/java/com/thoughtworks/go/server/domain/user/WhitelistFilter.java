@@ -18,18 +18,18 @@ package com.thoughtworks.go.server.domain.user;
 
 import com.thoughtworks.go.config.CaseInsensitiveString;
 
-import java.util.Collection;
+import java.util.List;
 
 public class WhitelistFilter implements DashboardFilter {
     private final String name;
-    private final Collection<CaseInsensitiveString> pipelines;
+    private final List<CaseInsensitiveString> pipelines;
 
-    public WhitelistFilter(String name, Collection<CaseInsensitiveString> pipelines) {
+    public WhitelistFilter(String name, List<CaseInsensitiveString> pipelines) {
         this.name = name;
         this.pipelines = pipelines;
     }
 
-    public Collection<CaseInsensitiveString> pipelines() {
+    public List<CaseInsensitiveString> pipelines() {
         return pipelines;
     }
 

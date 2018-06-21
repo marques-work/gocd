@@ -22,8 +22,7 @@ public class NamedSubSelection extends PipelineSelections {
     private final DashboardFilter currentFilter;
 
     public NamedSubSelection(PipelineSelections parent, String filterName) {
-        final DashboardFilter namedFilter = parent.viewFilters().named(filterName);
-        currentFilter = null == namedFilter ? Filters.DEFAULT : namedFilter;
+        currentFilter = parent.viewFilters().named(filterName);
     }
 
     @Override

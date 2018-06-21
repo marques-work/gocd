@@ -25,6 +25,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PipelineSelections extends PersistentObject implements Serializable {
 
@@ -59,7 +60,6 @@ public class PipelineSelections extends PersistentObject implements Serializable
     }
 
     public PipelineSelections(List<String> unselectedPipelines, Date date, Long userId, boolean isBlacklist) {
-        this.userId = userId;
         update(unselectedPipelines, date, userId, isBlacklist);
     }
 
@@ -94,8 +94,14 @@ public class PipelineSelections extends PersistentObject implements Serializable
     public void update(List<String> selections, Date date, Long userId, boolean isBlacklist) {
         this.userId = userId;
         this.isBlacklist = isBlacklist;
-        updateSelections(selections);
         this.lastUpdate = date;
+        final List<CaseInsensitiveString> pipelines = selections.stream().map(CaseInsensitiveString::new).collect(Collectors.toList());
+        initFilters(pipelines, isBlacklist);
+    }
+
+    public void touch(Date date, Long userId) {
+        this.lastUpdate = date;
+        this.userId = userId;
     }
 
     public boolean includesGroup(PipelineConfigs group) {
@@ -108,17 +114,16 @@ public class PipelineSelections extends PersistentObject implements Serializable
     }
 
     public boolean includesPipeline(CaseInsensitiveString pipelineName) {
-        return viewFilters().named(null).isPipelineVisible(pipelineName);
+        return activeFilter().isPipelineVisible(pipelineName);
+    }
+
+    public DashboardFilter activeFilter() {
+        return viewFilters().named(null);
     }
 
     public List<String> pipelineList() {
         return pipelines;
     }
-
-    private List<CaseInsensitiveString> caseInsensitivePipelineList() {
-        return caseInsensitivePipelineList;
-    }
-
 
     public String getSelections() {
         return StringUtils.join(pipelineList(), ",");
@@ -157,24 +162,27 @@ public class PipelineSelections extends PersistentObject implements Serializable
     }
 
     public boolean isBlacklist() {
-        return isBlacklist;
+        return needsUpgrade() ? isBlacklist : activeFilter() instanceof BlacklistFilter;
     }
 
     public PipelineSelections upgrade() {
-        ArrayList<DashboardFilter> views = new ArrayList<>();
-        this.viewFilters = new Filters(views);
-
-        views.add(isBlacklist ?
-                new BlacklistFilter(null, caseInsensitivePipelineList) :
-                new WhitelistFilter(null, caseInsensitivePipelineList)
-        );
+        initFilters(caseInsensitivePipelineList, isBlacklist);
 
         caseInsensitivePipelineList = Collections.emptyList();
         pipelines = Collections.emptyList();
 
-        this.version = CURRENT_SCHEMA_VERSION;
-
         return this;
+    }
+
+    private void initFilters(List<CaseInsensitiveString> pipelines, boolean isBlacklist) {
+        ArrayList<DashboardFilter> views = new ArrayList<>();
+        views.add(isBlacklist ?
+                new BlacklistFilter(null, pipelines) :
+                new WhitelistFilter(null, pipelines)
+        );
+
+        this.viewFilters = new Filters(views);
+        this.version = CURRENT_SCHEMA_VERSION;
     }
 
     @Override
