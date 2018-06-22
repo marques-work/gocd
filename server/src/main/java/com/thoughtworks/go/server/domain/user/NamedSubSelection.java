@@ -19,19 +19,24 @@ package com.thoughtworks.go.server.domain.user;
 import com.thoughtworks.go.config.CaseInsensitiveString;
 
 public class NamedSubSelection extends PipelineSelections {
-    private final DashboardFilter currentFilter;
+    private final DashboardFilter activeFilter;
 
     public NamedSubSelection(PipelineSelections parent, String filterName) {
-        currentFilter = parent.viewFilters().named(filterName);
+        activeFilter = parent.viewFilters().named(filterName);
+    }
+
+    @Override
+    public DashboardFilter activeFilter() {
+        return activeFilter;
     }
 
     @Override
     public boolean includesPipeline(CaseInsensitiveString pipelineName) {
-        return currentFilter.isPipelineVisible(pipelineName);
+        return activeFilter.isPipelineVisible(pipelineName);
     }
 
     @Override
     public boolean isBlacklist() {
-        return currentFilter instanceof BlacklistFilter;
+        return activeFilter instanceof BlacklistFilter;
     }
 }

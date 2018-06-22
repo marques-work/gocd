@@ -148,14 +148,7 @@ class PipelineSelectionControllerDelegateTest implements SecurityServiceTrait, C
 
         long recordId = SecureRandom.longNumber()
 
-        def group1 = new BasicPipelineConfigs(group: "grp")
-        group1.add(new PipelineConfig(name: new CaseInsensitiveString("build-linux")))
-        group1.add(new PipelineConfig(name: new CaseInsensitiveString("build-windows")))
-        group1.add(new PipelineConfig(name: new CaseInsensitiveString("burp")))
-        List<PipelineConfigs> groups = [group1]
-
-        when(pipelineConfigService.viewableGroupsFor(currentUsername())).thenReturn(groups)
-        when(pipelineSelectionsService.persistSelectedPipelines(String.valueOf(recordId), currentUserLoginId(), null, Collections.singletonList("burp"), payload.blacklist)).thenReturn(recordId)
+        when(pipelineSelectionsService.persistSelectedPipelines(String.valueOf(recordId), currentUserLoginId(), null, ['build-linux', 'build-windows'], payload.blacklist)).thenReturn(recordId)
         when(systemEnvironment.isSessionCookieSecure()).thenReturn(false)
 
         httpRequestBuilder.withCookies(new Cookie("selected_pipelines", String.valueOf(recordId)))

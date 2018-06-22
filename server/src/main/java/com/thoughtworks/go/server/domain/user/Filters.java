@@ -52,7 +52,7 @@ public class Filters {
         updateIndex();
     }
 
-    public void addFilter(DashboardFilter filter) {
+    public void addOrReplaceFilter(DashboardFilter filter) {
         List<DashboardFilter> newFilters = new ArrayList<>();
         newFilters.addAll(filters);
 

@@ -91,11 +91,20 @@ public class PipelineSelectionsService {
         }
     }
 
+    /**
+     * Adds a pipeline to a whitelist filter only
+     *
+     * TODO: Remove this, as it only pertains to the old dashboard
+     */
+    @Deprecated
     public void updateUserPipelineSelections(String id, Long userId, CaseInsensitiveString pipelineToAdd) {
         PipelineSelections currentSelections = findOrCreateCurrentPipelineSelectionsFor(id, userId);
-        if (!currentSelections.isBlacklist()) {
-            currentSelections.addPipelineToSelections(pipelineToAdd);
+
+        if (currentSelections.activeFilter() instanceof WhitelistFilter) {
+            WhitelistFilter filter = (WhitelistFilter) currentSelections.activeFilter();
+            filter.pipelines().add(pipelineToAdd);
             pipelineRepository.saveSelectedPipelines(currentSelections);
+
         }
     }
 

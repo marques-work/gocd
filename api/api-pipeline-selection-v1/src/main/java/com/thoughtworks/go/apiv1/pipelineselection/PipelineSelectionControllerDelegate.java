@@ -35,6 +35,7 @@ import spark.Request;
 import spark.Response;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import static spark.Spark.*;
@@ -83,9 +84,9 @@ public class PipelineSelectionControllerDelegate extends ApiController {
 
         selectedPipelines = new NamedSubSelection(selectedPipelines, filterName);
 
-        List<PipelineConfigs> pipelineConfigs = pipelineConfigService.viewableGroupsFor(currentUsername());
+        List<PipelineConfigs> groups = pipelineConfigService.viewableGroupsFor(currentUsername());
 
-        PipelineSelectionResponse pipelineSelectionResponse = new PipelineSelectionResponse(selectedPipelines, pipelineConfigs);
+        PipelineSelectionResponse pipelineSelectionResponse = new PipelineSelectionResponse(selectedPipelines, groups);
 
         return writerForTopLevelObject(request, response, writer -> PipelineSelectionsRepresenter.toJSON(writer, pipelineSelectionResponse));
     }
@@ -96,11 +97,10 @@ public class PipelineSelectionControllerDelegate extends ApiController {
 
         JsonReader jsonReader = GsonTransformer.getInstance().jsonReaderFrom(request.body());
 
-        PipelineSelectionResponse selectionResponse = PipelineSelectionsRepresenter.fromJSON(jsonReader);
+        List<String> selections = jsonReader.readStringArrayIfPresent("selections").orElse(Collections.emptyList());
+        boolean isBlackList = jsonReader.optBoolean("blacklist").orElse(true);
 
-        List<PipelineConfigs> pipelineConfigs = pipelineConfigService.viewableGroupsFor(currentUsername());
-
-        Long recordId = pipelineSelectionsService.persistSelectedPipelines(fromCookie, currentUserId(request), filterName, selectionResponse.selectedPipelinesList(pipelineConfigs), selectionResponse.isBlacklist());
+        Long recordId = pipelineSelectionsService.persistSelectedPipelines(fromCookie, currentUserId(request), filterName, selections, isBlackList);
 
         if (!apiAuthenticationHelper.securityEnabled()) {
             response.cookie("/go", "selected_pipelines", String.valueOf(recordId), ONE_YEAR, systemEnvironment.isSessionCookieSecure(), true);

@@ -76,7 +76,7 @@ public class PipelineSelections extends PersistentObject implements Serializable
     }
 
     public void addNamedFilter(DashboardFilter filter) {
-        this.viewFilters.addFilter(filter);
+        this.viewFilters.addOrReplaceFilter(filter);
     }
 
     public int version() {
@@ -130,6 +130,12 @@ public class PipelineSelections extends PersistentObject implements Serializable
     }
 
     private void setSelections(String unselectedPipelines) {
+        if (null == unselectedPipelines) {
+            pipelines = Collections.emptyList();
+            caseInsensitivePipelineList = Collections.emptyList();
+            return;
+        }
+
         this.pipelines = Arrays.asList(StringUtils.split(unselectedPipelines, ","));
         List<CaseInsensitiveString> pipelineList = new ArrayList<>();
         for (String pipeline : pipelines) {
@@ -186,18 +192,5 @@ public class PipelineSelections extends PersistentObject implements Serializable
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this);
-    }
-
-    public PipelineSelections addPipelineToSelections(CaseInsensitiveString pipelineToAdd) {
-        ArrayList<String> updatedListOfPipelines = new ArrayList<>();
-        updatedListOfPipelines.addAll(pipelines);
-        updatedListOfPipelines.add(CaseInsensitiveString.str(pipelineToAdd));
-
-        this.updateSelections(updatedListOfPipelines);
-        return this;
-    }
-
-    private void updateSelections(List<String> selections) {
-        this.setSelections(StringUtils.join(selections, ","));
     }
 }
