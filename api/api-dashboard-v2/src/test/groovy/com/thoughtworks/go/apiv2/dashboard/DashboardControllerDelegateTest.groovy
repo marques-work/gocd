@@ -23,6 +23,7 @@ import com.thoughtworks.go.apiv2.dashboard.representers.PipelineGroupsRepresente
 import com.thoughtworks.go.config.security.Permissions
 import com.thoughtworks.go.config.security.users.Everyone
 import com.thoughtworks.go.server.dashboard.GoDashboardPipelineGroup
+import com.thoughtworks.go.server.domain.user.NamedSubSelection
 import com.thoughtworks.go.server.domain.user.PipelineSelections
 import com.thoughtworks.go.server.service.GoDashboardService
 import com.thoughtworks.go.server.service.PipelineSelectionsService
@@ -87,7 +88,7 @@ class DashboardControllerDelegateTest implements SecurityServiceTrait, Controlle
         pipelineGroup.addPipeline(dashboardPipeline('pipeline2'))
         when(pipelineSelectionsService.getPersistedSelectedPipelines(any(), any())).thenReturn(pipelineSelections)
         when(goDashboardService.hasEverLoadedCurrentState()).thenReturn(true)
-        when(goDashboardService.allPipelineGroupsForDashboard(eq(pipelineSelections), eq(currentUsername()))).thenReturn([pipelineGroup])
+        when(goDashboardService.allPipelineGroupsForDashboard(eq(new NamedSubSelection(pipelineSelections, null)), eq(currentUsername()))).thenReturn([pipelineGroup])
 
         getWithApiHeader(controller.controllerPath())
 
@@ -107,7 +108,7 @@ class DashboardControllerDelegateTest implements SecurityServiceTrait, Controlle
         when(pipelineSelectionsService.getPersistedSelectedPipelines(any(), any())).thenReturn(pipelineSelections)
         when(goDashboardService.hasEverLoadedCurrentState()).thenReturn(true)
         def pipelineGroups = [pipelineGroup]
-        when(goDashboardService.allPipelineGroupsForDashboard(eq(pipelineSelections), eq(currentUsername()))).thenReturn(pipelineGroups)
+        when(goDashboardService.allPipelineGroupsForDashboard(eq(new NamedSubSelection(pipelineSelections, null)), eq(currentUsername()))).thenReturn(pipelineGroups)
 
 
         def etag = computeEtag(pipelineGroups)
@@ -165,7 +166,7 @@ class DashboardControllerDelegateTest implements SecurityServiceTrait, Controlle
         when(pipelineSelectionsService.getPersistedSelectedPipelines(any(), any())).thenReturn(pipelineSelections)
         when(goDashboardService.hasEverLoadedCurrentState()).thenReturn(true)
         def pipelineGroups = [pipelineGroup]
-        when(goDashboardService.allPipelineGroupsForDashboard(eq(pipelineSelections), eq(currentUsername()))).thenReturn(pipelineGroups)
+        when(goDashboardService.allPipelineGroupsForDashboard(eq(new NamedSubSelection(pipelineSelections, null)), eq(currentUsername()))).thenReturn(pipelineGroups)
 
         String etag = computeEtag(pipelineGroups)
         getWithApiHeader(controller.controllerBasePath(), ['if-none-match': etag])
