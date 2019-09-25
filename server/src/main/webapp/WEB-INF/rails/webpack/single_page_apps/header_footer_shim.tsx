@@ -26,7 +26,6 @@ import {Attrs as HeaderAttrs, SiteHeader} from "views/pages/partials/site_header
 
 $(() => {
   window.addEventListener("DOMContentLoaded", () => {
-    $(document).foundation();
     ModalManager.onPageLoad();
     UsageDataReporter.report();
     VersionUpdater.update();

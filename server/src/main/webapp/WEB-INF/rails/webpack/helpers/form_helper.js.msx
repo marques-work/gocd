@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import m from "mithril";
-import $ from "jquery";
 import _ from "lodash";
 import uuid4 from "uuid/v4";
 import Stream from "mithril/stream";
@@ -48,12 +47,6 @@ function unwrapStream(maybeStream) {
   }
 
   return maybeStream;
-}
-
-function teardownFoundation(el) {
-  if ($(el).data('zfPlugin')) {
-    $(el).foundation('destroy');
-  }
 }
 
 // ensures the input is either an array or is wrapped in an array.
@@ -357,71 +350,6 @@ export const f = {
       return (<a href="javascript:void(0)"
                  class={compactClasses(args)} {...args}>{vnode.children}
       </a>);
-    }
-  },
-
-  tooltip: {
-    view(vnode) {
-      const args     = vnode.attrs;
-      const children = vnode.children;
-
-      if (!args.tooltip && _.isEmpty(children)) {
-        return <noscript/>;
-      }
-
-      const direction = deleteKeyAndReturnValue(args.tooltip, 'direction', 'bottom'),
-            size      = deleteKeyAndReturnValue(args.tooltip, 'size', 'medium'),
-            content   = deleteKeyAndReturnValue(args.tooltip, 'content', children),
-            clazz     = deleteKeyAndReturnValue(args.tooltip, 'class', null),
-            type      = deleteKeyAndReturnValue(args.tooltip, 'type', 'question-mark');
-
-      let tooltipId = 'tooltip-';
-
-      if (args.model && args.model.uuid) {
-        tooltipId += (`${args.model.uuid()}-${args.attrName}`);
-      } else {
-        tooltipId += uuid4();
-      }
-
-      return (
-        <span class={_.compact(['tooltip-wrapper', clazz]).join(' ')}>
-          <a href="javascript:void(0)"
-             data-toggle={tooltipId}
-             class={`tooltip-${type}`}/>
-          <f.dropdown id={tooltipId}
-                      class={_.compact(['f-dropdown', 'dropdown-pane', 'content', 'tooltip-content', size, direction]).join(' ')}
-                      data-dropdown
-                      data-hover="true"
-                      data-hover-pane="true">
-            {content}
-          </f.dropdown>
-        </span>
-      );
-    }
-  },
-
-  dropdown: {
-    oncreate: (vnode) => {
-      new window.Foundation.Dropdown($(vnode.dom));
-    },
-
-    onupdate: (vnode) => {
-      new window.Foundation.Dropdown($(vnode.dom));
-    },
-
-    onbeforeremove: (vnode) => {
-      teardownFoundation(vnode.dom);
-    },
-
-    view(vnode) {
-      const args     = vnode.attrs;
-      const children = vnode.children;
-
-      return (
-        <div {...args}>
-          {children}
-        </div>
-      );
     }
   },
 
