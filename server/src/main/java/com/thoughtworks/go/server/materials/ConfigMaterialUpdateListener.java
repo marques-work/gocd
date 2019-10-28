@@ -74,17 +74,10 @@ public class ConfigMaterialUpdateListener implements GoMessageListener<MaterialU
                 Modification modification = latestModification.firstModifiedMaterialRevision().getLatestModification();
 
                 MaterialRevision lastParseRevision = getMaterialRevisionAtLastParseAttempt(message);
-                if (lastParseRevision == null) {
-                    //never parsed
-                    updateConfigurationFromCheckout(folder, modification, material);
-                } else if (latestModification.findRevisionFor(material.config()).hasChangedSince(lastParseRevision) ||
-                        this.repoConfigDataSource.hasConfigRepoConfigChangedSinceLastUpdate(material.config())) {
-                    // revision has changed. the config files might have been updated
-                    updateConfigurationFromCheckout(folder, modification, material);
-                } else {
-                    // revision is the same as last time, no need to parse again
-                    LOGGER.debug("[Config Material Update] Skipping parsing of Config material {} since material has no change since last parse.", material);
-                }
+
+                // Blindly update every time and send "parse-directory"; actual implementations would would
+                // want to be smarter than this, obviously :)
+                updateConfigurationFromCheckout(folder, modification, material);
             }
             LOGGER.debug("[Config Material Update] Completed parsing of Config material {}.", material);
         } catch (Exception ex) {
