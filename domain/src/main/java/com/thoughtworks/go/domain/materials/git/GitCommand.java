@@ -105,6 +105,11 @@ public class GitCommand extends SCMCommand {
 
     }
 
+    public List<GitNamedRef> listRemoteRefs(UrlArgument url) {
+        ConsoleResult result = runOrBomb(git().withArg("ls-remote").withArg("--refs").withArg(url));
+        return GitRefListParser.parse(result.output());
+    }
+
     public List<Modification> modificationsSince(Revision revision) {
         CommandLine command = new GitLogCommandBuilder()
                 .between(revision.getRevision(), remoteBranch())
