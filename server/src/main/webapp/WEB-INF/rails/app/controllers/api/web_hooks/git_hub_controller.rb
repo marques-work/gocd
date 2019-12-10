@@ -19,10 +19,27 @@ module Api
     class GitHubController < GuessUrlWebHookController
       before_action :verify_content_origin
       before_action :prempt_ping_call
-      before_action :allow_only_push_event
+      before_action :ensure_config_repo_id, only: [:add, :rm]
+      before_action :allow_only_pull_request_event, only: [:add, :rm]
+      before_action :allow_only_push_event, only: :notify
       before_action :verify_payload
 
+      def add
+        puts params[:config_repo_id]
+      end
+
+      def rm
+        puts params[:config_repo_id]
+      end
+
       protected
+
+      def ensure_config_repo_id
+        unless params[:config_repo_id].present?
+          render plain: 'Missing config repository identifier!', status: :bad_request, layout: nil
+        end
+      end
+
       def repo_branch
         payload['ref'].gsub('refs/heads/', '')
       end
@@ -34,6 +51,12 @@ module Api
 
       def repo_full_name
         payload['repository']['full_name']
+      end
+
+      def allow_only_pull_request_event
+        unless request.headers['X-GitHub-Event'] == 'pull_request'
+          render plain: "Ignoring event of type `#{request.headers['X-GitHub-Event']}'", status: :accepted, layout: nil
+        end
       end
 
       def allow_only_push_event
