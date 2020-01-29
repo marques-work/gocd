@@ -37,8 +37,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -178,6 +182,18 @@ public class GitMaterial extends ScmMaterial implements PasswordAwareMaterial {
     public List<String> branches() {
         GitCommand git = new GitCommand(null, null, null, false, secrets());
         return git.listRemoteRefs(url).stream().map(GitNamedRef::getName).collect(Collectors.toList());
+    }
+
+    @Override
+    public void ignoreRef(String ref, File baseDir) {
+        if (baseDir.exists()) {
+            try (BufferedWriter output = new BufferedWriter(new FileWriter(Paths.get(baseDir.getPath(), "ignoredrefs").toString(), true))) {
+                output.append(ref);
+                output.newLine();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public ValidationBean checkConnection(final SubprocessExecutionContext execCtx) {

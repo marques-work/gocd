@@ -107,6 +107,10 @@ public abstract class ScmMaterial extends AbstractMaterial implements SecretPara
         throw new RuntimeException("Not supported by this material type: " + this.getType());
     }
 
+    public void ignoreRef(String ref, File baseDir) {
+        throw new RuntimeException("Not supported by this material type: " + this.getType());
+    }
+
     public void checkout(File baseDir, Revision revision, SubprocessExecutionContext execCtx) {
         InMemoryStreamConsumer output = ProcessOutputStreamConsumer.inMemoryConsumer();
         this.updateTo(output, baseDir, new RevisionContext(revision), execCtx);
