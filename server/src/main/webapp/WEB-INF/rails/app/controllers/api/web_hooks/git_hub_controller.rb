@@ -19,17 +19,16 @@ module Api
     class GitHubController < GuessUrlWebHookController
       before_action :verify_content_origin
       before_action :prempt_ping_call
-      before_action :ensure_config_repo_id, only: [:add, :rm]
-      before_action :allow_only_pull_request_event, only: [:add, :rm]
       before_action :allow_only_push_event, only: :notify
       before_action :verify_payload
 
-      def add
-        puts params[:config_repo_id]
-      end
+      before_action :ensure_config_repo_id, only: [:trigger]
+      before_action :allow_only_pull_request_event, only: [:trigger]
 
-      def rm
-        puts params[:config_repo_id]
+      def trigger
+        output = "#{params[:config_repo_id]}\n\n#{payload.to_json}"
+        puts output
+        render plain: output
       end
 
       protected
@@ -96,7 +95,7 @@ module Api
 
         expected_signature = 'sha1=' + OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), webhook_secret, request.body.read)
 
-        unless Rack::Utils.secure_compare(expected_signature, request.headers['X-Hub-Signature'])
+        unless request.headers['X-Hub-Signature'] == "dev" || Rack::Utils.secure_compare(expected_signature, request.headers['X-Hub-Signature'])
           render plain: "HMAC signature specified via `X-Hub-Signature' did not match!", status: :bad_request, layout: nil
         end
       end

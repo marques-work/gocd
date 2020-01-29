@@ -211,8 +211,7 @@ Rails.application.routes.draw do
       end
 
       # Vendor Webhooks
-      post 'webhooks/github/:config_repo_id/add' => 'web_hooks/git_hub#add'
-      post 'webhooks/github/:config_repo_id/rm' => 'web_hooks/git_hub#rm'
+      post 'pr-webhooks/github/:config_repo_id/trigger' => 'web_hooks/git_hub#trigger'
 
       post 'webhooks/github/notify' => 'web_hooks/git_hub#notify'
       post 'webhooks/gitlab/notify' => 'web_hooks/git_lab#notify'
