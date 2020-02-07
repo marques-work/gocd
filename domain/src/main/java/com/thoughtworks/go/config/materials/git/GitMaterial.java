@@ -23,6 +23,7 @@ import com.thoughtworks.go.domain.MaterialInstance;
 import com.thoughtworks.go.domain.materials.*;
 import com.thoughtworks.go.domain.materials.git.GitCommand;
 import com.thoughtworks.go.domain.materials.git.GitMaterialInstance;
+import com.thoughtworks.go.domain.materials.git.GitNamedRef;
 import com.thoughtworks.go.domain.materials.git.GitVersion;
 import com.thoughtworks.go.domain.materials.svn.MaterialUrl;
 import com.thoughtworks.go.security.GoCipher;
@@ -39,6 +40,7 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.thoughtworks.go.util.ExceptionUtils.bomb;
 import static com.thoughtworks.go.util.ExceptionUtils.bombIfFailedToRunCommandLine;
@@ -170,6 +172,12 @@ public class GitMaterial extends ScmMaterial implements PasswordAwareMaterial {
         } catch (Exception e) {
             bomb(e);
         }
+    }
+
+    @Override
+    public List<String> remoteRefs() {
+        GitCommand git = new GitCommand(null, null, null, false, secrets());
+        return git.listRemoteRefs(url).stream().map(GitNamedRef::getName).collect(Collectors.toList());
     }
 
     public ValidationBean checkConnection(final SubprocessExecutionContext execCtx) {
@@ -346,11 +354,7 @@ public class GitMaterial extends ScmMaterial implements PasswordAwareMaterial {
         if (submoduleFolder != null ? !submoduleFolder.equals(that.submoduleFolder) : that.submoduleFolder != null) {
             return false;
         }
-        if (url != null ? !url.equals(that.url) : that.url != null) {
-            return false;
-        }
-
-        return true;
+        return url != null ? url.equals(that.url) : that.url == null;
     }
 
     @Override

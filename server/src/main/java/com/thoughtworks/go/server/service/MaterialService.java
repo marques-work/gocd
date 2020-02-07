@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @understands interactions between material-config, repository and modifications
@@ -111,6 +113,10 @@ public class MaterialService {
             result.notFound("Pipeline '" + pipelineName + "' does not contain material with fingerprint '" + fingerprint + "'.", HealthStateType.general(HealthStateScope.forPipeline(pipelineName)));
             return new ArrayList<>();
         }
+    }
+
+    public List<String> refsMatching(ScmMaterial material, Pattern pattern) {
+        return material.remoteRefs().stream().filter(pattern.asMatchPredicate()).collect(Collectors.toList());
     }
 
     public List<Modification> latestModification(Material material,
