@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import Stream from "mithril/stream";
+import {Accessor, basicAccessor} from "models/base/accessor";
 import {Errors} from "models/mixins/errors";
 import {Configuration} from "models/shared/configuration";
 import s from "underscore.string";
@@ -33,15 +33,7 @@ export class BaseErrorsConsumer implements ErrorsConsumer {
   // Exposes `consume()` as a static method
   static consume = consume;
 
-  // hide this from JSON serialization
-  private __errors = Stream(new Errors());
-
-  errors(newVal?: Errors): Errors {
-    if (arguments.length) {
-      this.__errors(newVal as Errors);
-    }
-    return this.__errors();
-  }
+  readonly errors = basicAccessor(new Errors());
 
   /**
    * Returns the model or sub-model responsible for recording errors for the field denoted
@@ -66,7 +58,7 @@ export class BaseErrorsConsumer implements ErrorsConsumer {
 
 /** API contract for the `ErrorsConsumer` behavior. */
 export interface ErrorsConsumer {
-  errors: (container?: Errors) => Errors;
+  errors: Accessor<Errors>;
   errorContainerFor: (subkey: string) => ErrorsConsumer;
   consumeErrorsResponse: (response: ResponseWithErrors, path?: string) => Errors;
 }
