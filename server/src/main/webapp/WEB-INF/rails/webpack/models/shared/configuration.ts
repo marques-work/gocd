@@ -95,11 +95,12 @@ export class Configurations {
 export class Configuration {
   readonly key: string;
   readonly errors: string[];
-  private _value: ConfigValue;
+  private __value: ConfigValue;
+  private __secure: boolean = false;
 
   constructor(key: string, value: EncryptedValue | PlainTextValue, errors: string[] = []) {
     this.key    = key;
-    this._value = value;
+    this.__value = value;
     this.errors = errors;
   }
 
@@ -126,36 +127,50 @@ export class Configuration {
     if (val === this.getValue()) {
       return;
     }
-    this._value = new PlainTextValue(val);
+    this.__value = new PlainTextValue(val);
   }
 
   get encrypted(): boolean {
     return this.isEncrypted();
   }
 
+  get secure(): boolean {
+    return this.encrypted || this.__secure;
+  }
+
+  set secure(val: boolean) {
+    this.__secure = val;
+  }
+
   public displayValue(): string {
-    return this._value.getDisplayValue();
+    return this.__value.getDisplayValue();
   }
 
   public getValue(): string {
-    return this._value.getValue();
+    return this.__value.getValue();
   }
 
   public isEncrypted(): boolean {
-    return this._value.isEncrypted();
+    return this.__value.isEncrypted();
   }
 
   public updateValue(value: string) {
     if (value !== this.getValue()) {
-      this._value = new PlainTextValue(value);
+      this.__value = new PlainTextValue(value);
     }
   }
 
   public toJSON(): object {
-    if (this.isEncrypted()) {
-      return {key: this.key, encrypted_value: this.getValue()};
+    const { key, value, secure, encrypted } = this;
+
+    if (encrypted) {
+      return { key, encrypted_value: value };
     }
 
-    return {key: this.key, value: this.getValue()};
+    if (secure) {
+      return { key, value, secure };
+    }
+
+    return { key, value };
   }
 }
