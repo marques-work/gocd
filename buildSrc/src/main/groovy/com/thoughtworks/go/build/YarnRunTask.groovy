@@ -25,90 +25,91 @@ import org.gradle.process.ExecSpec
 
 @CacheableTask
 class YarnRunTask extends DefaultTask {
-  private File workingDir
+    private File workingDir
 
-  private List<String> yarnCommand = new ArrayList<>()
-  private List<Object> sourceFiles = new ArrayList<Object>()
-  private File destinationDir
+    private List<String> yarnCommand = new ArrayList<>()
+    private List<Object> sourceFiles = new ArrayList<Object>()
+    private File destinationDir
 
-  YarnRunTask() {
-    inputs.property('os', OperatingSystem.current().toString())
+    YarnRunTask() {
+        inputs.property('os', OperatingSystem.current().toString())
 
-    project.afterEvaluate({
-      source(project.file("${getWorkingDir()}/package.json"))
-      source(project.file("${getWorkingDir()}/yarn.lock"))
-      source(project.file("${getWorkingDir()}/node_modules"))
-    })
-  }
-
-  @Input
-  File getWorkingDir() {
-    return workingDir
-  }
-
-  @Input
-  List<String> getYarnCommand() {
-    return yarnCommand
-  }
-
-  @OutputDirectory
-  @Optional
-  File getDestinationDir() {
-    return destinationDir
-  }
-
-  @SkipWhenEmpty
-  @InputFiles
-  @PathSensitive(PathSensitivity.NONE)
-  FileTree getSourceFiles() {
-    ArrayList<Object> copy = new ArrayList<Object>(this.sourceFiles)
-    FileTree src = getProject().files(copy).getAsFileTree()
-    src == null ? getProject().files().getAsFileTree() : src
-  }
-
-  void setYarnCommand(List<String> yarnCommand) {
-    this.yarnCommand = new ArrayList<>(yarnCommand)
-  }
-
-  void setWorkingDir(Object workingDir) {
-    this.workingDir = project.file(workingDir)
-  }
-
-  void source(Object... sources) {
-    this.sourceFiles.addAll(sources)
-  }
-
-  void setDestinationDir(File destinationDir) {
-    this.destinationDir = destinationDir
-  }
-
-  @TaskAction
-  def execute(IncrementalTaskInputs inputs) {
-    def shouldExecute = !inputs.incremental
-
-    inputs.outOfDate { change ->
-      shouldExecute = true
+        project.afterEvaluate({
+            source(project.file("${getWorkingDir()}/package.json"))
+            source(project.file("${getWorkingDir()}/yarn.lock"))
+            source(project.file("${getWorkingDir()}/node_modules"))
+        })
     }
 
-    inputs.removed { change ->
-      shouldExecute = true
+    @InputDirectory
+    @PathSensitive(value = PathSensitivity.ABSOLUTE)
+    File getWorkingDir() {
+        return workingDir
     }
 
-    if (shouldExecute) {
-      if (getDestinationDir() != null) {
-        project.delete(getDestinationDir())
-      }
-
-      project.exec { ExecSpec execSpec ->
-        execSpec.standardOutput = System.out
-        execSpec.errorOutput = System.err
-
-        execSpec.workingDir = this.getWorkingDir()
-        execSpec.commandLine = [OperatingSystem.current().isWindows() ? "yarn.cmd" : "yarn", "run"] + getYarnCommand()
-        println "[${execSpec.workingDir}]\$ ${execSpec.executable} ${execSpec.args.join(' ')}"
-      }
+    @Input
+    List<String> getYarnCommand() {
+        return yarnCommand
     }
 
-    setDidWork(shouldExecute)
-  }
+    @OutputDirectory
+    @Optional
+    File getDestinationDir() {
+        return destinationDir
+    }
+
+    @SkipWhenEmpty
+    @InputFiles
+    @PathSensitive(PathSensitivity.NONE)
+    FileTree getSourceFiles() {
+        ArrayList<Object> copy = new ArrayList<Object>(this.sourceFiles)
+        FileTree src = getProject().files(copy).getAsFileTree()
+        src == null ? getProject().files().getAsFileTree() : src
+    }
+
+    void setYarnCommand(List<String> yarnCommand) {
+        this.yarnCommand = new ArrayList<>(yarnCommand)
+    }
+
+    void setWorkingDir(Object workingDir) {
+        this.workingDir = project.file(workingDir)
+    }
+
+    void source(Object... sources) {
+        this.sourceFiles.addAll(sources)
+    }
+
+    void setDestinationDir(File destinationDir) {
+        this.destinationDir = destinationDir
+    }
+
+    @TaskAction
+    def execute(IncrementalTaskInputs inputs) {
+        def shouldExecute = !inputs.incremental
+
+        inputs.outOfDate { change ->
+            shouldExecute = true
+        }
+
+        inputs.removed { change ->
+            shouldExecute = true
+        }
+
+        if (shouldExecute) {
+            if (getDestinationDir() != null) {
+                project.delete(getDestinationDir())
+            }
+
+            project.exec { ExecSpec execSpec ->
+                execSpec.standardOutput = System.out
+                execSpec.errorOutput = System.err
+
+                execSpec.workingDir = this.getWorkingDir()
+                execSpec.commandLine = [OperatingSystem.current().isWindows() ? "yarn.cmd" : "yarn", "run"] + getYarnCommand()
+                println "[${execSpec.workingDir}]\$ ${execSpec.executable} ${execSpec.args.join(' ')}"
+            }
+        }
+
+        setDidWork(shouldExecute)
+    }
 }

@@ -15,18 +15,19 @@
  */
 
 description = 'GoCD AppServer Module'
+apply plugin: 'java-library'
 
 dependencies {
 
-  compile project(':base')
-  compile group: 'javax.servlet', name: 'javax.servlet-api', version: project.versions.servletApi
-  compile group: 'ch.qos.logback', name: 'logback-classic', version: project.versions.logback
-  compile group: 'org.apache.commons', name: 'commons-dbcp2', version: project.versions.commonsDbcp
-  compile group: 'org.apache.commons', name: 'commons-pool2', version: project.versions.commonsPool
-  compile group: 'org.jruby', name: 'jruby-complete', version: project.versions.jruby
-  compile group: 'org.jruby.rack', name: 'jruby-rack', version: versions.rack
-  testCompile project(':common')
-  testCompile project(':config:config-server')
-  testCompile project(':config:config-api')
-  testCompile project(':test:test-utils')
+  api project(':base')
+  api group: 'javax.servlet', name: 'javax.servlet-api', version: project.versions.servletApi
+  api group: 'ch.qos.logback', name: 'logback-classic', version: project.versions.logback
+  api group: 'org.apache.commons', name: 'commons-dbcp2', version: project.versions.commonsDbcp
+  api group: 'org.apache.commons', name: 'commons-pool2', version: project.versions.commonsPool
+  api group: 'org.jruby', name: 'jruby-complete', version: project.versions.jruby
+  api group: 'org.jruby.rack', name: 'jruby-rack', version: versions.rack
+  testImplementation project(':common')
+  testImplementation project(':config:config-server')
+  testImplementation project(':config:config-api')
+  testImplementation project(':test:test-utils')
 }

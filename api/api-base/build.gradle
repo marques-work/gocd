@@ -15,14 +15,23 @@
  */
 
 apply plugin: 'groovy'
+apply plugin: 'java-library'
+apply plugin: 'java-test-fixtures'
 
 dependencies {
-  compile project(':server')
-  compile project(':spark:spark-base')
-  testCompile localGroovy()
-  testCompile project(path: ':server', configuration: 'testOutput')
-  testCompile project(path: ':spark:spark-base', configuration: 'testOutput')
-  testCompile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: project.versions.bouncyCastle
+  api project(':server')
+  api project(':spark:spark-base')
+  testImplementation project(path: ':server', configuration: 'testOutput')
+  testImplementation project(path: ':config:config-api', configuration: 'testOutput')
+  testImplementation project(path: ':spark:spark-base', configuration: 'testOutput')
+  testImplementation project(':test:http-mocks')
+  testImplementation(group: 'org.dbunit', name: 'dbunit', version: project.versions.dbunit) {
+    exclude(group: 'postgresql')
+  }
+  testImplementation group: 'org.assertj', name: 'assertj-core', version: project.versions.assertJ
+  testImplementation group: 'org.mockito', name: 'mockito-core', version: project.versions.mockito
+  testImplementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: project.versions.bouncyCastle
   testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: project.versions.junit5
+  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: project.versions.junit5
   testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: project.versions.junit5
 }

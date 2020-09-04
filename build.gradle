@@ -300,6 +300,15 @@ subprojects {
   apply plugin: 'base'
   apply plugin: 'com.github.ben-manes.versions'
 
+  afterEvaluate {
+    if (project.plugins.hasPlugin('groovy')) {
+      def groovy = project.dependencies.localGroovy()
+      project.dependencies {
+        testImplementation groovy
+      }
+    }
+  }
+
   if (project.path != ':test:http-mocks') {
     apply plugin: "com.github.hierynomus.license"
     license {
@@ -423,7 +432,7 @@ subprojects {
       fatJarConfig
 
       testOutput {
-        extendsFrom testRuntime
+        extendsFrom testRuntimeOnly
         transitive = true
       }
     }
@@ -431,13 +440,13 @@ subprojects {
     sourceSets {
       main {
         java {
-          compileClasspath += configurations.compileOnly
+          compileClasspath += configurations.compileClasspath
         }
       }
       test {
         java {
-          compileClasspath += configurations.compileOnly
-          runtimeClasspath += configurations.compileOnly
+          compileClasspath += configurations.compileClasspath
+          runtimeClasspath += configurations.compileClasspath
         }
       }
     }
@@ -1073,9 +1082,9 @@ task newApi {
           apply plugin: 'groovy'
 
           dependencies {
-            compile project(':api:api-base')
+            implementation project(':api:api-base')
 
-            testCompile project(path: ':api:api-base', configuration: 'testOutput')
+            testImplementation project(':test:test-api')
 
             testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: project.versions.junit5
             testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: project.versions.junit5

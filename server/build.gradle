@@ -28,6 +28,7 @@ import java.nio.file.FileSystems
 import static org.jruby.runtime.Constants.RUBY_VERSION
 
 description = 'GoCD Server'
+apply plugin: 'java-library'
 
 buildscript {
   repositories {
@@ -56,8 +57,8 @@ sourceSets {
       srcDirs = [project.file('src/test-shared/resources')]
     }
 
-    compileClasspath += sourceSets.main.output + configurations.compileOnly + configurations.testCompileOnly
-    runtimeClasspath += sourceSets.main.output + configurations.compileOnly + configurations.testCompileOnly
+    compileClasspath += sourceSets.main.output + configurations.compileClasspath + configurations.testCompileClasspath
+    runtimeClasspath += sourceSets.main.output + configurations.compileClasspath + configurations.testCompileClasspath
   }
 
   fastUnitTest {
@@ -88,14 +89,7 @@ sourceSets {
 configurations {
   jrubyGems
 
-  sharedTestCompile.extendsFrom testCompile
-  sharedTestRuntime.extendsFrom testRuntime
-
-  fastUnitTestCompile.extendsFrom sharedTestCompile
-  fastUnitTestRuntime.extendsFrom sharedTestRuntime
-
-  integrationTestCompile.extendsFrom sharedTestCompile
-  integrationTestRuntime.extendsFrom sharedTestRuntime
+  integrationTestImplementation.extendsFrom testImplementation
 
   warConfig
   jarConfig
@@ -110,19 +104,16 @@ configurations {
   }
 
   sharedTestOutput {
-    extendsFrom testRuntime
+    extendsFrom testRuntimeClasspath
     transitive = true
   }
 
-  compile.exclude(group: 'org.springframework', module: 'spring-support')
-  runtime.exclude(group: 'org.springframework', module: 'spring-support')
+  compileClasspath.exclude(group: 'org.springframework', module: 'spring-support')
+  runtimeClasspath.exclude(group: 'org.springframework', module: 'spring-support')
 
-  // this dependency is a "provided" dependency
-  compile.exclude(group: 'ch.qos.logback', module: 'logback-classic')
-  runtime.exclude(group: 'ch.qos.logback', module: 'logback-classic')
-  apiBase.exclude(group: 'ch.qos.logback', module: 'logback-classic')
-  api.exclude(group: 'ch.qos.logback', module: 'logback-classic')
-  spark.exclude(group: 'ch.qos.logback', module: 'logback-classic')
+  apiBase
+  apiModule
+  spark
 }
 
 project.ext.webAppDir = file("src/main/webapp")
@@ -155,7 +146,7 @@ project.ext.jrubyDefaultSystemProperties = [
   // 'jruby.debug.loadService': 'true',
 ]
 
-project.ext.jrubyJar = { project.configurations.compile.files { it.name == 'jruby-complete' }.first() }
+project.ext.jrubyJar = { project.configurations.compileClasspath.files { it.name == 'jruby-complete' }.first() }
 
 project.ext.jrubyScriptsDir = project.file("scripts")
 
@@ -237,77 +228,77 @@ dependencies {
   compileOnly group: 'org.jetbrains', name: 'annotations', version: project.versions.jetBrainsAnnotations
 
   apiBase project(':api:api-base')
-  api project(':api').subprojects
+  apiModule project(':api').subprojects
   spark project(':spark').subprojects
-  compile project(':addon-api:database')
-  compile project(':config:config-server')
-  compile project(':plugin-infra:go-plugin-access')
-  compile project(':common')
-  compile project(':rack_hack')
-  compile project(':db-support:db-migration')
-  compile project(':db-support:db-support-h2')
-  compile project(':db-support:db-support-postgresql')
-  compile project(':db-support:db-support-mysql')
+  api project(':addon-api:database')
+  api project(':config:config-server')
+  api project(':plugin-infra:go-plugin-access')
+  api project(':common')
+  api project(':rack_hack')
+  api project(':db-support:db-migration')
+  api project(':db-support:db-support-h2')
+  api project(':db-support:db-support-postgresql')
+  api project(':db-support:db-support-mysql')
   copyOnly project(path: ':tfs-impl:tfs-impl-14', configuration: 'fatJarConfig')
   copyOnly project(path: ':agent', configuration: 'fatJarConfig')
   copyOnly project(path: ':agent-launcher', configuration: 'fatJarConfig')
   copyOnlyTestData project(':test:test-agent')
 
-  compile group: 'org.apache.commons', name: 'commons-dbcp2', version: project.versions.commonsDbcp
-  compile(group: 'org.hibernate', name: 'hibernate-ehcache', version: project.versions.hibernate) {
+  implementation group: 'org.apache.commons', name: 'commons-dbcp2', version: project.versions.commonsDbcp
+  api(group: 'org.hibernate', name: 'hibernate-ehcache', version: project.versions.hibernate) {
     exclude(module: 'ehcache-core')
     exclude(module: 'commons-collections')
   }
 
-  compile group: 'commons-fileupload', name: 'commons-fileupload', version: project.versions.commonsFileUpload
+  implementation group: 'commons-fileupload', name: 'commons-fileupload', version: project.versions.commonsFileUpload
 
-  compile group: 'javassist', name: 'javassist', version: project.versions.javaAssist
-  compile group: 'org.mybatis', name: 'mybatis', version: project.versions.mybatis
-  compile group: 'org.mybatis', name: 'mybatis-spring', version: project.versions.mybatisSpring
-  compile group: 'net.sf.ehcache', name: 'ehcache', version: project.versions.ehcache
-  compile(group: 'opensymphony', name: 'oscache', version: '2.4.1') {
+  implementation group: 'javassist', name: 'javassist', version: project.versions.javaAssist
+  implementation group: 'org.mybatis', name: 'mybatis', version: project.versions.mybatis
+  implementation group: 'org.mybatis', name: 'mybatis-spring', version: project.versions.mybatisSpring
+  implementation group: 'net.sf.ehcache', name: 'ehcache', version: project.versions.ehcache
+  implementation(group: 'opensymphony', name: 'oscache', version: '2.4.1') {
     exclude(module: 'jms')
     exclude(module: 'servlet-api')
   }
 
-  compile group: 'org.apache.activemq', name: 'activemq-broker', version: project.versions.activeMQ
+  implementation group: 'org.apache.activemq', name: 'activemq-broker', version: project.versions.activeMQ
 
-  compile group: 'org.jruby', name: 'jruby-complete', version: project.versions.jruby
-  compile group: 'org.jruby.rack', name: 'jruby-rack', version: versions.rack
+  implementation group: 'org.jruby', name: 'jruby-complete', version: project.versions.jruby
+  implementation group: 'org.jruby.rack', name: 'jruby-rack', version: versions.rack
 
-  compile group: 'org.springframework', name: 'spring-orm', version: project.versions.spring
-  compile group: 'org.springframework', name: 'spring-web', version: project.versions.spring
-  compile group: 'org.springframework', name: 'spring-context-support', version: project.versions.spring
-  compile(group: 'org.springframework.security', name: 'spring-security-web', version: project.versions.springSecurity) {
+  implementation group: 'org.springframework', name: 'spring-orm', version: project.versions.spring
+  implementation group: 'org.springframework', name: 'spring-web', version: project.versions.spring
+  implementation group: 'org.springframework', name: 'spring-context-support', version: project.versions.spring
+  implementation(group: 'org.springframework.security', name: 'spring-security-web', version: project.versions.springSecurity) {
     exclude(group: 'org.springframework')
   }
-  compile(group: 'org.springframework.security', name: 'spring-security-config', version: project.versions.springSecurity)
-  compile group: 'org.aspectj', name: 'aspectjrt', version: project.versions.aspectj
-  compile group: 'org.aspectj', name: 'aspectjweaver', version: project.versions.aspectj
-  compile group: 'org.tuckey', name: 'urlrewritefilter', version: project.versions.urlrewrite
-  compile(group: 'org.apache.velocity', name: 'velocity', version: '1.7') {
+  implementation(group: 'org.springframework.security', name: 'spring-security-config', version: project.versions.springSecurity)
+  implementation group: 'org.aspectj', name: 'aspectjrt', version: project.versions.aspectj
+  implementation group: 'org.aspectj', name: 'aspectjweaver', version: project.versions.aspectj
+  implementation group: 'org.tuckey', name: 'urlrewritefilter', version: project.versions.urlrewrite
+  implementation(group: 'org.apache.velocity', name: 'velocity', version: '1.7') {
     exclude(module: 'commons-lang')
     exclude(module: 'commons-collections')
   }
-  compile files("vendor/velocity-tools-view-${project.versions.velocityToolsView}.jar")
+  implementation files("vendor/velocity-tools-view-${project.versions.velocityToolsView}.jar")
   // old digester version required by velocity-tools-view
-  compile group: 'commons-digester', name: 'commons-digester', version: project.versions.commonsDigester
+  implementation group: 'commons-digester', name: 'commons-digester', version: project.versions.commonsDigester
 
   // this is needed by velocity tools view
-  compile group: 'commons-lang', name: 'commons-lang', version: project.versions.commonsLang
-  compile group: 'commons-collections', name: 'commons-collections', version: project.versions.commonsCollections
-  compile group: 'com.google.guava', name: 'guava', version: project.versions.guava
-  compile group: 'com.sun.mail', name: 'mailapi', version: project.versions.mail
-  compile group: 'com.sun.mail', name: 'smtp', version: project.versions.mail
-  compile group: 'org.objenesis', name: 'objenesis', version: project.versions.objenesis
+  implementation group: 'commons-lang', name: 'commons-lang', version: project.versions.commonsLang
+  implementation group: 'commons-collections', name: 'commons-collections', version: project.versions.commonsCollections
+  implementation group: 'com.google.guava', name: 'guava', version: project.versions.guava
+  implementation group: 'com.sun.mail', name: 'mailapi', version: project.versions.mail
+  implementation group: 'com.sun.mail', name: 'smtp', version: project.versions.mail
+  implementation group: 'org.objenesis', name: 'objenesis', version: project.versions.objenesis
 
   // needed by jdom2 for some XPATH stuff
-  compile(group: 'jaxen', name: 'jaxen', version: project.versions.jaxen) {
+  implementation(group: 'jaxen', name: 'jaxen', version: project.versions.jaxen) {
     exclude(module: 'xom')
     exclude(module: 'jdom')
   }
-  compile group: 'org.slf4j', name: 'slf4j-api', version: project.versions.slf4j
-  compile(group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.http.server', version: project.versions.jgit) {
+  implementation group: 'org.slf4j', name: 'slf4j-api', version: project.versions.slf4j
+  implementation(group: 'org.eclipse.jgit', name: 'org.eclipse.jgit.http.server', version: project.versions.jgit) {
     exclude(module: 'jsch')
     exclude(module: 'jzlib')
   }
@@ -318,31 +309,32 @@ dependencies {
   compileOnly group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: project.versions.bouncyCastle
   compileOnly group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: versions.jetty
 
-  testCompile(group: 'org.dbunit', name: 'dbunit', version: project.versions.dbunit) {
+  testImplementation(group: 'org.dbunit', name: 'dbunit', version: project.versions.dbunit) {
     exclude(group: 'postgresql')
   }
-  testCompile project(path: ':common', configuration: 'testOutput')
-  testCompile project(path: ':config:config-server', configuration: 'testOutput')
-  testCompile project(path: ':config:config-api', configuration: 'testOutput')
-  testCompile project(path: ':test:test-utils')
-  testCompile project(':jetty9')
-  testCompile group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: project.versions.jsonUnit
-  testCompile group: 'org.jsoup', name: 'jsoup', version: project.versions.jsoup
-  testCompile group: 'org.xmlunit', name: 'xmlunit-matchers', version: project.versions.xmlUnit
-  testCompile group: 'org.assertj', name: 'assertj-core', version: project.versions.assertJ
-  testCompile group: 'org.xmlunit', name: 'xmlunit-assertj', version: project.versions.xmlUnit
+  testImplementation project(path: ':common', configuration: 'testOutput')
+  testImplementation project(path: ':config:config-server', configuration: 'testOutput')
+  testImplementation project(path: ':config:config-api', configuration: 'testOutput')
+  testImplementation project(path: ':domain', configuration: 'testOutput')
+  testImplementation project(path: ':test:test-utils')
+  testImplementation project(':jetty9')
+  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: project.versions.jsonUnit
+  testImplementation group: 'org.jsoup', name: 'jsoup', version: project.versions.jsoup
+  testImplementation group: 'org.xmlunit', name: 'xmlunit-matchers', version: project.versions.xmlUnit
+  testImplementation group: 'org.assertj', name: 'assertj-core', version: project.versions.assertJ
+  testImplementation group: 'org.xmlunit', name: 'xmlunit-assertj', version: project.versions.xmlUnit
 
-  testCompile project(':test:http-mocks')
+  testImplementation project(':test:http-mocks')
 
-  testCompile group: 'com.github.paweladamski', name: 'HttpClientMock', version: '1.0.4'
+  testImplementation group: 'com.github.paweladamski', name: 'HttpClientMock', version: '1.0.4'
 
   testCompileOnly group: 'junit', name: 'junit', version: project.versions.junit
   testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: project.versions.junit5
-  testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: project.versions.junit5
-  testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-migrationsupport', version: project.versions.junit5
+  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: project.versions.junit5
+  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-migrationsupport', version: project.versions.junit5
   testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: project.versions.junit5
   testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: project.versions.junit5
-  integrationTestCompile group: 'com.github.sbrannen', name: 'spring-test-junit5', version: project.versions.spring4jUnit5Extension
+  integrationTestImplementation group: 'com.github.sbrannen', name: 'spring-test-junit5', version: project.versions.spring4jUnit5Extension
 }
 
 jar {
@@ -725,15 +717,15 @@ task war(type: Jar) {
   dependsOn rootProject.generateLicenseReport
   dependsOn configureWar
   dependsOn ':server:jar', ':server:compileAssets'
-  dependsOn project.configurations.compile
-  dependsOn project.configurations.api
+  dependsOn project.configurations.compileClasspath
+  dependsOn project.configurations.apiModule
   dependsOn project.configurations.spark
   finalizedBy 'verifyWar'
   archiveBaseName = 'cruise'
-  extension 'war'
+  archiveExtension = 'war'
 
   // exclude app-server because it causes class cast exceptions (loaded by different classloaders)
-  def classpath = (project.configurations.api + project.configurations.spark + project.configurations.compile)
+  def classpath = (project.configurations.apiModule + project.configurations.spark + project.configurations.compileClasspath )
     .minus(project(':app-server').jar.archivePath)
     .minus(jar.archivePath)
 
@@ -912,14 +904,6 @@ task verifyWar(type: VerifyJarTask) {
 task licenseReportAggregate {
   if (!project.hasProperty('fastBuild')) {
     rootProject.allprojects.each { eachProject ->
-      eachProject.afterEvaluate {
-        def reportTasks = eachProject.tasks.withType(ReportTask)
-        if (!reportTasks.isEmpty()) {
-          licenseReportAggregate.dependsOn reportTasks
-          licenseReportAggregate.inputs.dir(eachProject.licenseReport.outputDir)
-        }
-      }
-
       def reportTasks = eachProject.tasks.withType(ReportTask)
       if (!reportTasks.isEmpty()) {
         licenseReportAggregate.dependsOn reportTasks

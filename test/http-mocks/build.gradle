@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
+apply plugin: 'java-library'
+
 dependencies {
-  compile group: 'org.assertj', name: 'assertj-core', version: project.versions.assertJ
-  compile group: 'junit', name: 'junit', version: project.versions.junit
-  compile group: 'org.apache.commons', name: 'commons-lang3', version: project.versions.commonsLang3
-  compile group: 'javax.servlet', name: 'javax.servlet-api', version: project.versions.servletApi
-  compile group: 'com.google.code.gson', name: 'gson', version: project.versions.gson
-  compile group: 'org.apache.httpcomponents', name: 'httpmime', version: project.versions.apacheHttpComponents
-  compile group: 'org.springframework', name: 'spring-core', version: project.versions.spring
-  compile group: 'org.springframework', name: 'spring-web', version: project.versions.spring
-  compile group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: project.versions.jsonUnit
+  api group: 'org.assertj', name: 'assertj-core', version: project.versions.assertJ
+  api group: 'junit', name: 'junit', version: project.versions.junit
+  api group: 'org.apache.commons', name: 'commons-lang3', version: project.versions.commonsLang3
+  api group: 'javax.servlet', name: 'javax.servlet-api', version: project.versions.servletApi
+  api group: 'com.google.code.gson', name: 'gson', version: project.versions.gson
+  api group: 'org.apache.httpcomponents', name: 'httpmime', version: project.versions.apacheHttpComponents
+  api group: 'org.springframework', name: 'spring-core', version: project.versions.spring
+  api group: 'org.springframework', name: 'spring-web', version: project.versions.spring
+  api group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: project.versions.jsonUnit
 }

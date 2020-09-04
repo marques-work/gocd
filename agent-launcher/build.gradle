@@ -19,18 +19,18 @@ import com.thoughtworks.go.build.VerifyJarTask
 description = 'Agent Launcher Jar'
 
 dependencies {
-  // BC is not really a compile dep, but it's marked as `compileOnly` in other places to avoid leaking it to downstream
-  // we mark it as `compile` here so it gets packaged in the resultant jar
-  compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: project.versions.bouncyCastle
-  compile group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: project.versions.bouncyCastle
+  // BC is not really an implementation dep, but it's marked as `compileOnly` in other places to avoid leaking it to downstream
+  // we mark it as `implementation` here so it gets packaged in the resultant jar
+  implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: project.versions.bouncyCastle
+  implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: project.versions.bouncyCastle
 
-  compile project(':agent-common')
+  implementation project(':agent-common')
+  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: project.versions.junit5
+  testImplementation group: 'org.mockito', name: 'mockito-core', version: project.versions.mockito
+  testImplementation project(':test:test-utils')
   testCompileOnly group: 'junit', name: 'junit', version: project.versions.junit
   testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: project.versions.junit5
-  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: project.versions.junit5
   testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: project.versions.junit5
-  testCompile group: 'org.mockito', name: 'mockito-core', version: project.versions.mockito
-  testCompile project(':test:test-utils')
 }
 
 jar {
@@ -45,7 +45,7 @@ task fatJar(type: Jar) {
     attributes 'Go-Agent-Launcher-Lib-Dir': 'libs'
   }
 
-  from(configurations.compile + jar.archivePath) { into "libs/" }
+  from(configurations.compileClasspath  + jar.archivePath) { into "libs/" }
 }
 
 task verifyJar(type: VerifyJarTask) {

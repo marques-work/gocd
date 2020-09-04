@@ -19,20 +19,18 @@ import com.thoughtworks.go.build.VerifyJarTask
 description = 'GoCD Agent Bootstrapper'
 
 dependencies {
-  compile project(':agent-common')
-  compile group: 'commons-codec', name: 'commons-codec', version: project.versions.commonsCodec
-
-  testCompile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: project.versions.bouncyCastle
-  testCompile group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: project.versions.bouncyCastle
-  testCompile project(':test:test-utils')
-  testCompile group: 'org.mockito', name: 'mockito-core', version: project.versions.mockito
-  testCompile group: 'org.hamcrest', name: 'hamcrest-library', version: project.versions.hamcrest
-  packagingOnly project(path: ':agent-launcher', configuration: 'fatJarConfig')
-  extractedAtTopLevel project(':jar-class-loader')
+  implementation project(':agent-common')
+  testImplementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: project.versions.bouncyCastle
+  testImplementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: project.versions.bouncyCastle
+  testImplementation project(':test:test-utils')
+  testImplementation group: 'org.mockito', name: 'mockito-core', version: project.versions.mockito
+  testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: project.versions.hamcrest
+  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: project.versions.junit5
   testCompileOnly group: 'junit', name: 'junit', version: project.versions.junit
   testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: project.versions.junit5
-  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: project.versions.junit5
   testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: project.versions.junit5
+  packagingOnly project(path: ':agent-launcher', configuration: 'fatJarConfig')
+  extractedAtTopLevel project(':jar-class-loader')
 }
 
 jar {
@@ -47,7 +45,7 @@ task fatJar(type: Jar) {
     attributes 'GoCD-Main-Class': 'com.thoughtworks.go.agent.bootstrapper.AgentBootstrapper'
   }
 
-  from(configurations.compile + jar.archivePath) { into "lib/" }
+  from(configurations.compileClasspath  + jar.archivePath) { into "lib/" }
 
   from(configurations.packagingOnly) {
     into "defaultFiles/"

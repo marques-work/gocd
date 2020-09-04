@@ -17,22 +17,24 @@
 description = 'APIs to allow GoCD to communicate with GoCD Plugins'
 
 apply plugin: 'groovy'
+apply plugin: 'java-library'
 
 dependencies {
-  compile project(':plugin-infra:go-plugin-config-repo')
-  compile project(':plugin-infra:go-plugin-infra')
-  compile project(':domain')
-  compile project(':plugin-infra:plugin-metadata-store')
-  compile group: 'com.bazaarvoice.jolt', name: 'jolt-core', version: project.versions.jolt
-  compile group: 'com.bazaarvoice.jolt', name: 'json-utils', version: project.versions.jolt
+  api project(':plugin-infra:go-plugin-config-repo')
+  api project(':plugin-infra:go-plugin-infra')
+  api project(':domain')
+  api project(':plugin-infra:plugin-metadata-store')
+  api group: 'com.bazaarvoice.jolt', name: 'jolt-core', version: project.versions.jolt
+  api group: 'com.bazaarvoice.jolt', name: 'json-utils', version: project.versions.jolt
 
-  testCompile localGroovy()
-  testCompile group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: project.versions.jsonUnit
-  testCompile project(':test:test-utils')
-  testCompile project(path: ':domain', configuration: 'testOutput')
+  testImplementation group: 'net.javacrumbs.json-unit', name: 'json-unit-fluent', version: project.versions.jsonUnit
+  testImplementation project(':test:test-utils')
+  testImplementation project(path: ':config:config-api', configuration: 'testOutput')
+  testImplementation project(path: ':domain', configuration: 'testOutput')
   testCompileOnly group: 'junit', name: 'junit', version: project.versions.junit
   testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: project.versions.junit5
   testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: project.versions.junit5
   testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: project.versions.junit5
-  testCompile group: 'org.assertj', name: 'assertj-core', version: project.versions.assertJ
+  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-migrationsupport', version: project.versions.junit5
+  testImplementation group: 'org.assertj', name: 'assertj-core', version: project.versions.assertJ
 }

@@ -16,9 +16,9 @@
 
 description = 'GoCD Rack Delegator'
 dependencies {
-  compile project(':app-server')
-  testCompile project(':test:test-utils')
-  testCompile group: 'org.mockito', name: 'mockito-core', version: project.versions.mockito
+  implementation project(':app-server')
+  testImplementation project(':test:test-utils')
+  testImplementation group: 'org.mockito', name: 'mockito-core', version: project.versions.mockito
   compileOnly(group: 'javax.servlet', name: 'javax.servlet-api', version: project.versions.servletApi)
   testCompileOnly group: 'junit', name: 'junit', version: project.versions.junit
   testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: project.versions.junit5

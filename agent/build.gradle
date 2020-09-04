@@ -27,8 +27,8 @@ sourceSets {
       srcDirs = [file('src/test-functional/resources')]
     }
 
-    compileClasspath = sourceSets.main.output + sourceSets.test.output + configurations.functionalTestCompile
-    runtimeClasspath = output + compileClasspath + configurations.functionalTestRuntime
+    compileClasspath = sourceSets.main.output + sourceSets.test.output + configurations.functionalTestCompileClasspath
+    runtimeClasspath = output + compileClasspath + configurations.functionalTestRuntimeClasspath
   }
 }
 
@@ -54,32 +54,32 @@ idea {
 }
 
 configurations {
-  functionalTestCompile.extendsFrom testCompile
-  functionalTestRuntime.extendsFrom testRuntime
+  functionalTestCompileClasspath.extendsFrom testCompileClasspath
+  functionalTestRuntimeClasspath.extendsFrom testRuntimeClasspath
 }
 
 dependencies {
-  // BC is not really a compile dep, but it's marked as `compileOnly` in other places to avoid leaking it to downstream
+  // BC is not really an implementation dep, but it's marked as `compileOnly` in other places to avoid leaking it to downstream
   // we mark it as `compile` here so it gets packaged in the resultant jar
-  compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: project.versions.bouncyCastle
-  compile group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: project.versions.bouncyCastle
+  implementation group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: project.versions.bouncyCastle
+  implementation group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: project.versions.bouncyCastle
 
-  compile project(':agent-common')
-  compile project(':common')
-  compile group: 'org.objenesis', name: 'objenesis', version: project.versions.objenesis
-  compile group: 'org.apache.commons', name: 'commons-configuration2', version: project.versions.commonsConfiguration
+  implementation project(':agent-common')
+  implementation project(':common')
+  implementation group: 'org.objenesis', name: 'objenesis', version: project.versions.objenesis
+  implementation group: 'org.apache.commons', name: 'commons-configuration2', version: project.versions.commonsConfiguration
 
-  compile group: 'org.nanohttpd', name: 'nanohttpd', version: versions.nanohttpd
+  implementation group: 'org.nanohttpd', name: 'nanohttpd', version: versions.nanohttpd
 
-  testCompile project(path: ':common', configuration: 'testOutput')
-  testCompile project(path: ':config:config-api', configuration: 'testOutput')
-  testCompile project(':test:test-utils')
+  testImplementation project(path: ':common', configuration: 'testOutput')
+  testImplementation project(path: ':config:config-api', configuration: 'testOutput')
+  testImplementation project(':test:test-utils')
 
   testCompileOnly group: 'junit', name: 'junit', version: project.versions.junit
   testRuntimeOnly group: 'org.junit.vintage', name: 'junit-vintage-engine', version: project.versions.junit5
   testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: project.versions.junit5
   testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: project.versions.junit5
-  testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-migrationsupport', version: project.versions.junit5
+  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-migrationsupport', version: project.versions.junit5
 
   extractedAtTopLevel project(':agent-process-launcher')
   extractedAtTopLevel project(':jar-class-loader')
@@ -110,7 +110,7 @@ task fatJar(type: Jar) {
     attributes 'Go-Agent-Bootstrap-Class': 'com.thoughtworks.go.agent.AgentProcessParentImpl'
   }
 
-  from(configurations.compile + jar.archivePath) {
+  from(configurations.compileClasspath  + jar.archivePath) {
     into "lib/"
     rename "go-plugin-activator-${project.version}.jar", "go-plugin-activator.jar"
   }
