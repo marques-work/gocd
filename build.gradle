@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-
-import com.github.jk1.license.ReportTask
+import com.github.jk1.license.task.ReportTask
 import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.render.JsonReportRenderer
 import groovy.io.FileType
@@ -36,7 +35,7 @@ buildscript {
     classpath 'org.owasp:dependency-check-gradle:6.0.1'
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.25.0'
     classpath 'gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.15.0'
-    classpath 'com.github.jk1:gradle-license-report:1.7'
+    classpath 'com.github.jk1:gradle-license-report:1.14'
     classpath "com.github.jruby-gradle:jruby-gradle-core-plugin:2.0.0-alpha.7"
   }
 }
@@ -105,7 +104,7 @@ List<String> partitionFiles(Collection originalFiles) {
   // random shuffle, every agent uses the same seed, so shuffling is predictable
   Collections.shuffle(files, new Random(seed))
 
-  def allPartitions = files.collate(testsPerBucket)
+  def allPartitions = (files.collate(testsPerBucket) as List<List<String>>)
   def currentPartition = allPartitions[currentWorkerIndex - 1]
   return currentPartition ?: []
 }
@@ -159,8 +158,8 @@ rootProject.ext.commandRepoUrl = System.getenv('COMMAND_REPO_URL') ? System.gete
 project.ext.defaultJvmArgs = []
 
 project.ext.compilerOptions = [
-  sourceCompatibility: 11,
-  targetCompatibility: 11,
+  sourceCompatibility: JavaVersion.VERSION_11,
+  targetCompatibility: JavaVersion.VERSION_11,
 ]
 
 rootProject.ext.versions = [
@@ -175,7 +174,7 @@ rootProject.ext.versions = [
   cglib                 : '3.3.0',
   cloning               : '1.9.11',
   commonsBeanutils      : '1.9.3',
-  commonsCodec          : '1.14',
+  commonsCodec          : '1.15',
   commonsCollections    : '3.2.2',
   commonsCollections4   : '4.4',
   commonsConfiguration  : '2.6',
@@ -404,7 +403,7 @@ subprojects {
     }
   }
 
-  if (!project.fileTree("src/main/java").files.isEmpty()) {
+  if (project.path.startsWith(':test:') || !project.fileTree("src/main/java").files.isEmpty()) {
     apply plugin: 'java'
     apply plugin: 'pmd'
     apply plugin: 'com.github.jk1.dependency-license-report'
@@ -456,7 +455,7 @@ subprojects {
       excludeGroups = ["com.thoughtworks.go"]
       filters = [new LicenseBundleNormalizer()]
       outputDir = file("${project.buildDir}/reports/dependency-license")
-      configurations = ['compile', 'compileOnly', 'packagingInLibDir']
+      configurations = ['compileClasspath', 'packagingInLibDir']
     }
 
     tasks.withType(ReportTask) { ReportTask reportTask ->

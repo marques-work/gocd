@@ -15,7 +15,7 @@
  */
 
 
-import com.github.jk1.license.ReportTask
+import com.github.jk1.license.task.ReportTask
 import com.thoughtworks.go.build.ExecuteUnderRailsTask
 import com.thoughtworks.go.build.LicenseReport
 import com.thoughtworks.go.build.VerifyJarTask
@@ -1003,6 +1003,45 @@ task licenseReportAggregate {
       moduleVersion : '14.118.0',
       moduleUrls    : [
         "https://github.com/Microsoft/team-explorer-everywhere"
+      ],
+      moduleLicenses: [
+        [
+          moduleLicense   : 'MIT',
+          moduleLicenseUrl: "https://spdx.org/licenses/MIT.html"
+        ]
+      ]
+    ],
+    [
+      moduleName    : 'org.slf4j:log4j-over-slf4j',
+      moduleVersion : project.versions.slf4j,
+      moduleUrls    : [
+        "https://slf4j.org.org"
+      ],
+      moduleLicenses: [
+        [
+          moduleLicense   : 'MIT',
+          moduleLicenseUrl: "https://spdx.org/licenses/MIT.html"
+        ]
+      ]
+    ],
+    [
+      moduleName    : 'org.slf4j:jcl-over-slf4j',
+      moduleVersion : project.versions.slf4j,
+      moduleUrls    : [
+        "https://slf4j.org.org"
+      ],
+      moduleLicenses: [
+        [
+          moduleLicense   : 'MIT',
+          moduleLicenseUrl: "https://spdx.org/licenses/MIT.html"
+        ]
+      ]
+    ],
+    [
+      moduleName    : 'org.slf4j:jul-to-slf4j',
+      moduleVersion : project.versions.slf4j,
+      moduleUrls    : [
+        "https://slf4j.org.org"
       ],
       moduleLicenses: [
         [

@@ -24,11 +24,11 @@ import org.ysb33r.grolifant.api.OperatingSystem
 class DownloaderTask extends DefaultTask {
   String executable
   String url
-  String packageName;
-  String packageVersion;
+  String packageName
+  String packageVersion
 
   @TaskAction
-  public void perform() {
+  void perform() {
     AbstractDistributionInstaller installer = createInstaller()
     // perform the download
     File distributionRoot = installer.getDistributionRoot()

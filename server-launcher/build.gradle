@@ -28,7 +28,7 @@ licenseReport {
   excludeGroups = ["com.thoughtworks.go"]
   filters = [new LicenseBundleNormalizer()]
   outputDir = file("${project.buildDir}/reports/dependency-license")
-  configurations = ['compile', 'compileOnly', 'packagingInLibDir']
+  configurations = ['compileClasspath', 'packagingInLibDir']
 }
 
 configurations {

@@ -40,12 +40,15 @@ class LicenseReport {
     '(OFL-1.1 AND MIT)',
     "GPLv2 with the Classpath Exception",
     "GNU LESSER GENERAL PUBLIC LICENSE, Version 2.1",
+    "GNU LESSER GENERAL PUBLIC LICENSE, Version 3",
+    "The 3-Clause BSD License",
     "MPL 2.0 or EPL 1.0",
   ]
 
   private static Set<String> ALLOWED_LICENSES = (LICENSE_EXCEPTIONS + [
     APACHE_1_1,
     APACHE_2_0,
+    BSD_0,
     BSD_2_CLAUSE,
     BSD_2_CLAUSE_FREEBSD,
     BSD_3_CLAUSE,
