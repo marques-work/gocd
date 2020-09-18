@@ -278,6 +278,20 @@ allprojects {
   version = project.fullVersion
   buildDir = "${projectDir}/target"
 
+  configurations {
+    implementAndPackage {
+      canBeConsumed = true
+      transitive = true
+
+      attributes {
+        attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.class, LibraryElements.JAR))
+      }
+    }
+
+    compileClasspath.extendsFrom(implementAndPackage)
+    runtimeClasspath.extendsFrom(implementAndPackage)
+  }
+
   repositories {
     mavenCentral()
     maven { url "https://repo1.maven.org/maven2/" } // for things that disappeared from repo.maven.apache.org
