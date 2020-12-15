@@ -40,32 +40,24 @@ import com.thoughtworks.go.domain.materials.packagematerial.PackageMaterialInsta
 import com.thoughtworks.go.domain.materials.perforce.P4MaterialInstance;
 import com.thoughtworks.go.domain.materials.scm.PluggableSCMMaterialInstance;
 import com.thoughtworks.go.domain.materials.svn.SvnMaterialInstance;
-import com.thoughtworks.go.remote.AgentInstruction;
-import com.thoughtworks.go.remote.BuildRepositoryRemote;
 import com.thoughtworks.go.remote.adapter.RuntimeTypeAdapterFactory;
-import com.thoughtworks.go.remote.request.*;
 import com.thoughtworks.go.remote.work.*;
 import com.thoughtworks.go.server.service.AgentRuntimeInfo;
 import com.thoughtworks.go.server.service.ElasticAgentRuntimeInfo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 
-import static java.lang.Boolean.parseBoolean;
+public class Serialization {
+    private static class SingletonHolder {
+        private static final Gson INSTANCE = create();
+    }
 
-@Component
-public class NewRemote implements BuildRepositoryRemote {
-    private BuildRepositoryRemote buildRepositoryRemote;
-    private GoHttpClientHttpInvokerRequestExecutor httpClientHttpInvokerRequestExecutor;
-    private final Gson gson;
+    public static Gson instance() {
+        return SingletonHolder.INSTANCE;
+    }
 
-    @Autowired
-    public NewRemote(BuildRepositoryRemote buildRepositoryRemote, GoHttpClientHttpInvokerRequestExecutor httpClientHttpInvokerRequestExecutor) {
-        this.buildRepositoryRemote = buildRepositoryRemote;
-        this.httpClientHttpInvokerRequestExecutor = httpClientHttpInvokerRequestExecutor;
-        gson = new GsonBuilder()
+    public static Gson create() {
+        return new GsonBuilder()
                 .registerTypeAdapter(ArtifactStore.class, new ArtifactStoreAdapter())
                 .registerTypeAdapter(ConfigurationProperty.class, new ConfigurationPropertyAdapter())
                 .registerTypeAdapterFactory(builderAdapter())
@@ -75,87 +67,6 @@ public class NewRemote implements BuildRepositoryRemote {
                 .registerTypeAdapterFactory(agentRuntimeInfoAdapter())
                 .registerTypeAdapterFactory(fetchHandlerAdapter())
                 .create();
-    }
-
-    @Override
-    public AgentInstruction ping(AgentRuntimeInfo info) {
-        try {
-            String instruction = this.httpClientHttpInvokerRequestExecutor.doPost("ping", gson.toJson(new PingRequest(info), PingRequest.class));
-            return gson.fromJson(instruction, AgentInstruction.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public Work getWork(AgentRuntimeInfo runtimeInfo) {
-        try {
-            String work = this.httpClientHttpInvokerRequestExecutor.doPost("get_work", gson.toJson(new GetWorkRequest(runtimeInfo), GetWorkRequest.class));
-            return gson.fromJson(work, Work.class);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void reportCurrentStatus(AgentRuntimeInfo agentRuntimeInfo, JobIdentifier jobIdentifier, JobState jobState) {
-        try {
-            this.httpClientHttpInvokerRequestExecutor.doPost("report_current_status",
-                    gson.toJson(new ReportCurrentStatusRequest(agentRuntimeInfo, jobIdentifier, jobState), ReportCurrentStatusRequest.class));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void reportCompleting(AgentRuntimeInfo agentRuntimeInfo, JobIdentifier jobIdentifier, JobResult result) {
-        try {
-            this.httpClientHttpInvokerRequestExecutor.doPost("report_completing",
-                    gson.toJson(new ReportCompleteStatusRequest(agentRuntimeInfo, jobIdentifier, result), ReportCompleteStatusRequest.class));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void reportCompleted(AgentRuntimeInfo agentRuntimeInfo, JobIdentifier jobIdentifier, JobResult result) {
-        try {
-            this.httpClientHttpInvokerRequestExecutor.doPost("report_completed",
-                    gson.toJson(new ReportCompleteStatusRequest(agentRuntimeInfo, jobIdentifier, result), ReportCompleteStatusRequest.class));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public boolean isIgnored(AgentRuntimeInfo agentRuntimeInfo, JobIdentifier jobIdentifier) {
-        try {
-            String isIgnored = this.httpClientHttpInvokerRequestExecutor.doPost("is_ignored",
-                    gson.toJson(new IsIgnoredRequest(agentRuntimeInfo, jobIdentifier), IsIgnoredRequest.class));
-            return parseBoolean(isIgnored);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public String getCookie(AgentRuntimeInfo agentRuntimeInfo) {
-        try {
-            return this.httpClientHttpInvokerRequestExecutor.doPost("get_cookie",
-                    gson.toJson(new GetCookieRequest(agentRuntimeInfo), GetCookieRequest.class));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void consumeLine(String line, JobIdentifier jobIdentifier) {
-        this.buildRepositoryRemote.consumeLine(line, jobIdentifier);
-    }
-
-    @Override
-    public void taggedConsumeLine(String tag, String line, JobIdentifier jobIdentifier) {
-        this.buildRepositoryRemote.taggedConsumeLine(tag, line, jobIdentifier);
     }
 
     private static RuntimeTypeAdapterFactory<Builder> builderAdapter() {
@@ -169,7 +80,7 @@ public class NewRemote implements BuildRepositoryRemote {
                 .registerSubtype(PluggableTaskBuilder.class, "PluggableTaskBuilder");
     }
 
-    private RuntimeTypeAdapterFactory<Work> workAdapter() {
+    private static RuntimeTypeAdapterFactory<Work> workAdapter() {
         return RuntimeTypeAdapterFactory.of(Work.class, "type")
                 .registerSubtype(NoWork.class, "NoWork")
                 .registerSubtype(BuildWork.class, "BuildWork")
@@ -177,7 +88,7 @@ public class NewRemote implements BuildRepositoryRemote {
                 .registerSubtype(UnregisteredAgentWork.class, "UnregisteredAgentWork");
     }
 
-    private RuntimeTypeAdapterFactory<Material> materialAdapter() {
+    private static RuntimeTypeAdapterFactory<Material> materialAdapter() {
         return RuntimeTypeAdapterFactory.of(Material.class, "type")
                 .registerSubtype(DependencyMaterial.class, "DependencyMaterial")
                 .registerSubtype(GitMaterial.class, "GitMaterial")

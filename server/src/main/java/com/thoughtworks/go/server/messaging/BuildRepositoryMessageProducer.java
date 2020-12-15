@@ -18,10 +18,11 @@ package com.thoughtworks.go.server.messaging;
 import com.thoughtworks.go.domain.JobIdentifier;
 import com.thoughtworks.go.domain.JobResult;
 import com.thoughtworks.go.domain.JobState;
-import com.thoughtworks.go.remote.*;
+import com.thoughtworks.go.remote.AgentInstruction;
+import com.thoughtworks.go.remote.BuildRepositoryRemote;
+import com.thoughtworks.go.remote.BuildRepositoryRemoteImpl;
 import com.thoughtworks.go.remote.work.Work;
 import com.thoughtworks.go.server.messaging.scheduling.WorkAssignments;
-import com.thoughtworks.go.server.newsecurity.utils.SessionUtils;
 import com.thoughtworks.go.server.perf.WorkAssignmentPerformanceLogger;
 import com.thoughtworks.go.server.service.AgentRuntimeInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +30,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class BuildRepositoryMessageProducer implements BuildRepositoryRemote {
-    private BuildRepositoryRemoteImpl buildRepository;
-    private WorkAssignments workAssignments;
-    private WorkAssignmentPerformanceLogger workAssignmentPerformanceLogger;
+    private final BuildRepositoryRemoteImpl buildRepository;
+    private final WorkAssignments workAssignments;
+    private final WorkAssignmentPerformanceLogger workAssignmentPerformanceLogger;
 
     @Autowired
     public BuildRepositoryMessageProducer(BuildRepositoryRemoteImpl buildRepository, WorkAssignments workAssignments, WorkAssignmentPerformanceLogger workAssignmentPerformanceLogger) {
@@ -73,14 +74,6 @@ public class BuildRepositoryMessageProducer implements BuildRepositoryRemote {
     @Override
     public String getCookie(AgentRuntimeInfo agentRuntimeInfo) {
         return buildRepository.getCookie(agentRuntimeInfo);
-    }
-
-    @Override
-    public void consumeLine(String line, JobIdentifier jobIdentifier) {
-    }
-
-    @Override
-    public void taggedConsumeLine(String tag, String line, JobIdentifier jobIdentifier) {
     }
 
     @Override
