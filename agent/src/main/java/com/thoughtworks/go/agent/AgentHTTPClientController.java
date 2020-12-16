@@ -39,6 +39,7 @@ import com.thoughtworks.go.util.SystemEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import static com.thoughtworks.go.remote.AgentInstruction.NONE;
@@ -64,6 +65,7 @@ public class AgentHTTPClientController extends AgentController {
 
     @Autowired
     public AgentHTTPClientController(RemotingClient client,
+                                     @Qualifier("buildLoopServer")
                                      BuildRepositoryRemote legacyRmi,
                                      GoArtifactsManipulator manipulator,
                                      SslInfrastructureService sslInfrastructureService,
